@@ -26,9 +26,11 @@ const sample: Book = {
   notas: 'Notas de prueba',
   dondeComprado: null,
   directores: ['Alfred Hitchcock'],
+  directoresFotografia: [],
   guionistas: [],
   actores: [],
   productores: [],
+  bandaSonora: [],
 };
 
 describe('BookDetailPageComponent', () => {
@@ -64,6 +66,7 @@ describe('BookDetailPageComponent', () => {
     expect(el.textContent).toContain('Segunda mano');
     expect(el.textContent).toContain('hace 5 meses');
     expect(el.textContent).toContain('Alfred Hitchcock');
-    expect(el.textContent).toContain('🇪🇸');
+    expect(el.textContent).toContain('ES');
+    expect(el.querySelector('app-lang-flag')).toBeTruthy();
   });
 });

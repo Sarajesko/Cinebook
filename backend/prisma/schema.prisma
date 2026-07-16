@@ -16,6 +16,7 @@ enum Language {
   en
   fr
   pt
+  ca
 }
 
 enum ReadingState {
@@ -27,9 +28,11 @@ enum ReadingState {
 
 enum PersonRole {
   director
+  director_fotografia
   guionista
   actor
   productor
+  banda_sonora
 }
 
 enum WishPriority {
@@ -70,16 +73,16 @@ model Book {
   anio Int
   editorial String
   lengua Language
-  paisEdicion String @map("pais_edicion")
+  paisEdicion String? @map("pais_edicion")
   isbn String
 
   estado ReadingState
   fechaCompra DateTime @map("fecha_compra")
 
   condicion PurchaseCondition
-  precio Float
-  moneda String @default("EUR")
-  puntuacion Int
+  precio Float?
+  moneda String?
+  puntuacion Int?
 
   caratula String?
   notas String?

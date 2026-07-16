@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { BooksApiService } from '../../core/books/books-api.service';
 import { StatsApiService } from '../../core/stats/stats-api.service';
 import { StatsOverview } from '../../core/stats/stats.model';
 import { StatsPageComponent } from './stats-page.component';
@@ -17,14 +18,22 @@ const sample: StatsOverview = {
   puntuaciones: {
     media: 8,
     distribution: { '8': 2 },
+    libros: 2,
   },
   crecimiento: [{ periodo: '2026-07', count: 2 }],
-  figurasTop: [],
+  timeline: {
+    semanas: [{ periodo: '2026-W28', libros: 2, gasto: 40 }],
+    meses: [{ periodo: '2026-07', libros: 2, gasto: 40 }],
+    anios: [{ periodo: '2026', libros: 2, gasto: 40 }],
+  },
+  figurasTop: [{ nombre: 'Hitchcock', role: 'director', count: 2 }],
   figurasPorRol: {
     directores: [],
+    directoresFotografia: [],
     guionistas: [],
     actores: [],
     productores: [],
+    bandaSonora: [],
   },
   wishlist: { abiertos: 1 },
 };
@@ -42,6 +51,28 @@ describe('StatsPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: StatsApiService, useValue: api },
+        {
+          provide: BooksApiService,
+          useValue: {
+            list: () =>
+              of([
+                {
+                  id: 'b1',
+                  titulo: 'Hitchcock',
+                  autores: 'Truffaut',
+                  editorial: 'Alianza',
+                  directores: ['Alfred Hitchcock'],
+                  directoresFotografia: [],
+                  guionistas: [],
+                  actores: [],
+                  productores: [],
+                  bandaSonora: [],
+                  paisEdicion: 'España',
+                  isbn: '9780306406157',
+                },
+              ]),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -53,9 +84,30 @@ describe('StatsPageComponent', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('La sala en números');
     expect(el.textContent).toContain('2');
-    expect(el.textContent).toContain('🇪🇸');
+    expect(el.textContent).toContain('ES');
+    expect(el.querySelector('app-lang-flag')).toBeTruthy();
     expect(el.textContent).toContain('40 EUR');
+    expect(el.textContent).toContain('Compras y gasto en el tiempo');
     expect(el.textContent).toContain('deseado abierto');
+  });
+
+  it('searches books by editorial or director', () => {
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.onSearch('alianza');
+    fixture.detectChanges();
+    expect(component.matchedBooks().length).toBe(1);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Coincidencias');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Hitchcock');
+  });
+
+  it('switches period grain', () => {
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.setGrain('anios');
+    fixture.detectChanges();
+    expect(component.periodGrain()).toBe('anios');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('2026');
   });
 
   it('shows empty state', () => {

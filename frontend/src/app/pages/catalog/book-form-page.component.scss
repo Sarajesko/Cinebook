@@ -132,6 +132,12 @@ textarea {
   align-content: start;
 }
 
+.isbn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .scan-btn {
   justify-self: start;
   padding: 0.45rem 0.75rem;

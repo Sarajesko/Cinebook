@@ -2,7 +2,7 @@ import { Book } from './book.model';
 
 export type CatalogFilters = {
   q: string;
-  lengua: '' | 'es' | 'en' | 'fr' | 'pt';
+  lengua: '' | 'es' | 'en' | 'fr' | 'pt' | 'ca';
   pais: string;
   estado: string;
   condicion: '' | 'nuevo' | 'segunda_mano';
@@ -70,7 +70,7 @@ export function applyCatalogFilters(books: Book[], f: CatalogFilters): Book[] {
     if (f.condicion && book.condicion !== f.condicion) return false;
     if (f.puntuacion != null && book.puntuacion !== f.puntuacion) return false;
     if (f.anio != null && book.anio !== f.anio) return false;
-    if (!includesLoose(book.paisEdicion, f.pais)) return false;
+    if (!includesLoose(book.paisEdicion ?? '', f.pais)) return false;
     if (!includesLoose(book.autores, f.autor)) return false;
     if (!includesLoose(book.editorial, f.editorial)) return false;
     if (!namesInclude(book.directores, f.director)) return false;
@@ -83,11 +83,17 @@ export function applyCatalogFilters(books: Book[], f: CatalogFilters): Book[] {
     const haystack = [
       book.titulo,
       book.autores,
+      book.editorial,
+      book.paisEdicion ?? '',
       book.isbn,
+      book.dondeComprado ?? '',
+      book.notas ?? '',
       ...(book.directores ?? []),
+      ...(book.directoresFotografia ?? []),
       ...(book.guionistas ?? []),
       ...(book.actores ?? []),
       ...(book.productores ?? []),
+      ...(book.bandaSonora ?? []),
     ]
       .join(' ')
       .toLowerCase();
@@ -109,7 +115,7 @@ export function filtersFromParams(params: Record<string, string>): CatalogFilter
 
   return {
     q: params['q'] ?? '',
-    lengua: (['es', 'en', 'fr', 'pt'].includes(lengua)
+    lengua: (['es', 'en', 'fr', 'pt', 'ca'].includes(lengua)
       ? lengua
       : '') as CatalogFilters['lengua'],
     pais: params['pais'] ?? '',

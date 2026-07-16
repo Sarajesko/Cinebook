@@ -8,9 +8,11 @@ import {
 describe('book.model helpers', () => {
   it('maps flags', () => {
     expect(flagEmoji('ES')).toBe('🇪🇸');
-    expect(flagEmoji('USA')).toBe('🇺🇸');
+    expect(flagEmoji('US/UK')).toBe('🇺🇸🇬🇧');
+    expect(flagEmoji('USA')).toBe('🇺🇸🇬🇧');
     expect(flagEmoji('FR')).toBe('🇫🇷');
     expect(flagEmoji('PT')).toBe('🇵🇹');
+    expect(flagEmoji('CAT')).toBe('🏴󠁥󠁳󠁣󠁴󠁿');
   });
 
   it('labels condition and estado', () => {

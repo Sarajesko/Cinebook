@@ -39,6 +39,12 @@ h1 {
   font-size: 0.9rem;
 }
 
+.lang-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .muted {
   opacity: 0.7;
   font-style: italic;

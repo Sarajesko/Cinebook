@@ -6,7 +6,7 @@ import { BooksApiService } from '../../core/books/books-api.service';
 import {
   Book,
   conditionLabel,
-  flagEmoji,
+  priceLabel,
   starsLabel,
 } from '../../core/books/book.model';
 import {
@@ -17,10 +17,11 @@ import {
   filtersToParams,
   hasActiveFilters,
 } from '../../core/books/catalog-filters';
+import { LangFlagComponent } from '../../shared/lang-flag.component';
 
 @Component({
   selector: 'app-catalog-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, LangFlagComponent],
   templateUrl: './catalog-page.component.html',
   styleUrl: './catalog-page.component.scss',
 })
@@ -44,9 +45,9 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
 
   readonly active = computed(() => hasActiveFilters(this.filters()));
 
-  readonly flagEmoji = flagEmoji;
   readonly conditionLabel = conditionLabel;
   readonly starsLabel = starsLabel;
+  readonly priceLabel = priceLabel;
 
   readonly form = this.fb.nonNullable.group({
     q: [''],

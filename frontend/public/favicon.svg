@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Cinebook">
+  <rect width="32" height="32" rx="6" fill="#1a1410"/>
+  <path fill="#e8dcc8" d="M7 8.5h7.2c.7 0 1.3.3 1.8.8V24c-.5-.4-1.1-.6-1.8-.6H7V8.5zm18 0h-7.2c-.7 0-1.3.3-1.8.8V24c.5-.4 1.1-.6 1.8-.6H25V8.5z"/>
+  <path fill="#c4b49a" d="M15.2 9.5c.3-.2.6-.3 1-.3s.7.1 1 .3v12.8c-.3-.15-.65-.25-1-.25s-.7.1-1 .25V9.5z"/>
+  <rect x="8.2" y="11" width="4.2" height="1.1" rx=".3" fill="#a8896a" opacity=".85"/>
+  <rect x="8.2" y="13.4" width="3.4" height="1.1" rx=".3" fill="#a8896a" opacity=".7"/>
+  <rect x="19.6" y="11" width="4.2" height="1.1" rx=".3" fill="#a8896a" opacity=".85"/>
+  <rect x="20.4" y="13.4" width="3.4" height="1.1" rx=".3" fill="#a8896a" opacity=".7"/>
+  <circle cx="6.2" cy="12" r=".7" fill="#d4b896"/>
+  <circle cx="6.2" cy="16" r=".7" fill="#d4b896"/>
+  <circle cx="6.2" cy="20" r=".7" fill="#d4b896"/>
+  <circle cx="25.8" cy="12" r=".7" fill="#d4b896"/>
+  <circle cx="25.8" cy="16" r=".7" fill="#d4b896"/>
+  <circle cx="25.8" cy="20" r=".7" fill="#d4b896"/>
+</svg>

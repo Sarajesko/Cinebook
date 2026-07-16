@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
@@ -11,6 +11,7 @@ import {
   Max,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { Language, PurchaseCondition, ReadingState } from '@prisma/client';
 
@@ -36,9 +37,14 @@ export class CreateBookDto {
   @IsEnum(Language)
   lengua!: Language;
 
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === null || value === undefined || value === '' ? null : String(value),
+  )
+  @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsString()
   @MinLength(1)
-  paisEdicion!: string;
+  paisEdicion?: string | null;
 
   @IsString()
   @MinLength(10)
@@ -53,21 +59,33 @@ export class CreateBookDto {
   @IsEnum(PurchaseCondition)
   condicion!: PurchaseCondition;
 
-  @Type(() => Number)
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === null || value === undefined || value === '' ? null : Number(value),
+  )
+  @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  precio!: number;
+  precio?: number | null;
 
   @IsOptional()
+  @Transform(({ value }) =>
+    value === null || value === undefined || value === '' ? null : String(value),
+  )
+  @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsString()
   @MinLength(1)
-  moneda?: string;
+  moneda?: string | null;
 
-  @Type(() => Number)
+  @IsOptional()
+  @Transform(({ value }) =>
+    value === null || value === undefined || value === '' ? null : Number(value),
+  )
+  @ValidateIf((_, v) => v !== null && v !== undefined)
   @IsInt()
   @Min(1)
   @Max(10)
-  puntuacion!: number;
+  puntuacion?: number | null;
 
   @IsOptional()
   @IsUrl({ require_tld: false })
@@ -89,6 +107,11 @@ export class CreateBookDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  directoresFotografia?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   guionistas?: string[];
 
   @IsOptional()
@@ -100,4 +123,9 @@ export class CreateBookDto {
   @IsArray()
   @IsString({ each: true })
   productores?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  bandaSonora?: string[];
 }

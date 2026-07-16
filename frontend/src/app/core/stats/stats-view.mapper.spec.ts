@@ -39,17 +39,28 @@ const sample: StatsOverview = {
       '9': 1,
       '10': 0,
     },
+    libros: 3,
   },
   crecimiento: [
     { periodo: '2026-01', count: 2 },
     { periodo: '2026-02', count: 1 },
   ],
+  timeline: {
+    semanas: [{ periodo: '2026-W03', libros: 2, gasto: 40 }],
+    meses: [
+      { periodo: '2026-01', libros: 2, gasto: 40 },
+      { periodo: '2026-02', libros: 1, gasto: 20 },
+    ],
+    anios: [{ periodo: '2026', libros: 3, gasto: 60 }],
+  },
   figurasTop: [{ nombre: 'Hitchcock', role: 'director', count: 2 }],
   figurasPorRol: {
     directores: [{ nombre: 'Hitchcock', count: 2 }],
+    directoresFotografia: [],
     guionistas: [],
     actores: [{ nombre: 'Stewart', count: 1 }],
     productores: [],
+    bandaSonora: [],
   },
   wishlist: { abiertos: 4 },
 };
@@ -59,14 +70,18 @@ describe('mapStatsToView', () => {
     const view = mapStatsToView(sample);
     expect(view.empty).toBeFalse();
     expect(view.totalLibros).toBe(3);
-    expect(view.byLengua[0].flag).toBe('🇪🇸');
+    expect(view.byLengua[0].bandera).toBe('ES');
+    expect(view.byLengua[0].label).toBe('ES');
     expect(view.byEstado[0].label).toBe('Leído');
     expect(view.byCondicion[1].label).toBe('Segunda mano');
     expect(view.byLengua[0].pct).toBe(100);
     expect(view.byLengua[1].pct).toBe(50);
     expect(view.puntuacionMedia).toBe(8.3);
+    expect(view.puntuacionLibros).toBe(3);
     expect(view.scoreBars.find((s) => s.score === 8)?.count).toBe(2);
-    expect(view.crecimiento[0].periodo).toBe('2026-01');
+    expect(view.timeline.meses[0].periodo).toBe('2026-01');
+    expect(view.timeline.meses[0].libros).toBe(2);
+    expect(view.timeline.meses[0].gasto).toBe(40);
     expect(view.figurasTop[0].roleLabel).toBe('Director');
     expect(view.wishlistAbiertos).toBe(4);
     expect(view.gasto.total).toBe(60);

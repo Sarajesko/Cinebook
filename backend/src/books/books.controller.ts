@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import type { AuthUser } from '../auth/current-user.decorator';
@@ -37,6 +38,11 @@ export class BooksController {
   @Get()
   findAll(@CurrentUser() user: AuthUser) {
     return this.books.findAll(user.userId);
+  }
+
+  @Get('isbn-lookup')
+  lookupIsbn(@Query('isbn') isbn: string) {
+    return this.books.lookupIsbn(isbn ?? '');
   }
 
   @Get(':id')

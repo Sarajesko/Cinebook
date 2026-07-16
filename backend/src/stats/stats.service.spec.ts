@@ -110,16 +110,43 @@ describe('StatsService', () => {
     expect(stats.byCondicion.find((r) => r.key === 'nuevo')?.count).toBe(2);
     expect(stats.gasto.total).toBe(60);
     expect(stats.gasto.media).toBe(20);
+    expect(stats.gasto.libros).toBe(3);
     expect(stats.puntuaciones.media).toBe(8.33);
+    expect(stats.puntuaciones.libros).toBe(3);
     expect(stats.puntuaciones.distribution['8']).toBe(2);
     expect(stats.crecimiento).toEqual([
       { periodo: '2026-01', count: 2 },
       { periodo: '2026-02', count: 1 },
     ]);
+    expect(stats.timeline.meses).toEqual([
+      { periodo: '2026-01', libros: 2, gasto: 30 },
+      { periodo: '2026-02', libros: 1, gasto: 30 },
+    ]);
+    expect(stats.timeline.anios).toEqual([
+      { periodo: '2026', libros: 3, gasto: 60 },
+    ]);
+    expect(stats.timeline.semanas.length).toBeGreaterThan(0);
     expect(stats.figurasPorRol.directores[0]).toEqual({
       nombre: 'Hitchcock',
       count: 2,
     });
     expect(stats.wishlist.abiertos).toBe(2);
+  });
+
+  it('ignores null precio and puntuacion in averages', async () => {
+    prisma.book.findMany.mockResolvedValue([
+      { ...books[0], precio: null, puntuacion: null, moneda: null },
+      books[1],
+    ]);
+
+    const stats = await service.getOverview('u1');
+
+    expect(stats.totalLibros).toBe(2);
+    expect(stats.gasto.total).toBe(10);
+    expect(stats.gasto.media).toBe(10);
+    expect(stats.gasto.libros).toBe(1);
+    expect(stats.puntuaciones.media).toBe(8);
+    expect(stats.puntuaciones.libros).toBe(1);
+    expect(stats.puntuaciones.distribution['8']).toBe(1);
   });
 });

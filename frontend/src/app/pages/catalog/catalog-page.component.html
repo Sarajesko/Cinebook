@@ -15,7 +15,7 @@
           <input
             formControlName="q"
             type="search"
-            placeholder="Buscar título, autor, ISBN o figura…"
+            placeholder="Buscar título, autor, editorial, director, ISBN…"
             autocomplete="off"
           />
         </label>
@@ -33,10 +33,11 @@
             Lengua
             <select formControlName="lengua">
               <option value="">Todas</option>
-              <option value="es">🇪🇸 Español</option>
-              <option value="en">🇺🇸 English</option>
-              <option value="fr">🇫🇷 Français</option>
-              <option value="pt">🇵🇹 Português</option>
+              <option value="es">ES · Español</option>
+              <option value="ca">CAT · Català</option>
+              <option value="en">US/UK · English</option>
+              <option value="fr">FR · Français</option>
+              <option value="pt">PT · Português</option>
             </select>
           </label>
           <label>
@@ -138,16 +139,23 @@
               } @else {
                 <div class="cover-fallback" aria-hidden="true">{{ book.titulo.charAt(0) }}</div>
               }
-              <span class="flag" [attr.title]="book.bandera">{{ flagEmoji(book.bandera) }}</span>
+              <span class="flag" [attr.title]="book.bandera">
+                <app-lang-flag [code]="book.bandera" />
+              </span>
             </div>
             <div class="meta">
               <h2>{{ book.titulo }}</h2>
               <p class="authors">{{ book.autores }} · {{ book.anio }}</p>
               <p class="row">
                 <span>{{ conditionLabel(book.condicion) }}</span>
-                <span>{{ book.precio }} {{ book.moneda }}</span>
+                <span>{{ priceLabel(book.precio, book.moneda) }}</span>
               </p>
-              <p class="stars" [attr.aria-label]="book.puntuacion + ' de 10'">
+              <p
+                class="stars"
+                [attr.aria-label]="
+                  book.puntuacion == null ? 'Sin puntuación' : book.puntuacion + ' de 10'
+                "
+              >
                 {{ starsLabel(book.puntuacion) }}
               </p>
               <p class="muted small">{{ book.haceCuanto }}</p>

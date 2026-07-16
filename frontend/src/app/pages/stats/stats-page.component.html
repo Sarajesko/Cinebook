@@ -17,11 +17,56 @@
         <a class="btn" routerLink="/catalogo/nuevo">Añadir el primero</a>
       </div>
     } @else {
+      <label class="stats-search">
+        <span class="sr-only">Buscar en la colección</span>
+        <input
+          type="search"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Buscar editorial, director, título, autor…"
+          autocomplete="off"
+        />
+      </label>
+
+      @if (q()) {
+        <section class="search-hits wide-block">
+          <h2>Coincidencias</h2>
+          <p class="hint">
+            {{ matchedBooks().length }}
+            {{ matchedBooks().length === 1 ? 'libro' : 'libros' }}
+            · editoriales y figuras filtradas abajo
+          </p>
+          @if (matchedBooks().length === 0) {
+            <p class="muted">Nada coincide con «{{ searchQuery() }}».</p>
+          } @else {
+            <ul class="hit-list">
+              @for (book of matchedBooks(); track book.id) {
+                <li>
+                  <a [routerLink]="['/catalogo', book.id]">
+                    <span class="hit-title">{{ book.titulo }}</span>
+                    <span class="hit-meta">
+                      {{ book.editorial }}
+                      @if (book.directores.length) {
+                        · {{ book.directores.join(', ') }}
+                      }
+                    </span>
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+
       <p class="overview">
         <span class="big">{{ v.totalLibros }}</span>
         {{ v.totalLibros === 1 ? 'volumen' : 'volúmenes' }} en la sala
-        · media {{ v.puntuacionMedia }}/10
-        · {{ v.gasto.total }} {{ v.gasto.moneda }} gastados
+        @if (v.puntuacionLibros > 0) {
+          · media {{ v.puntuacionMedia }}/10
+        }
+        @if (v.gasto.libros > 0) {
+          · {{ v.gasto.total }} {{ v.gasto.moneda }} gastados
+        }
       </p>
 
       <div class="sections">
@@ -32,7 +77,12 @@
             @for (row of v.byLengua; track row.label) {
               <li>
                 <div class="bar-meta">
-                  <span>{{ row.flag }} {{ row.label }}</span>
+                  <span class="lang-row">
+                    @if (row.bandera) {
+                      <app-lang-flag [code]="row.bandera" />
+                    }
+                    {{ row.label }}
+                  </span>
                   <span>{{ row.count }}</span>
                 </div>
                 <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
@@ -75,18 +125,25 @@
 
         <section>
           <h2>Editoriales</h2>
-          <p class="hint">Top de la sala</p>
-          <ul class="bars">
-            @for (row of v.byEditorial; track row.label) {
-              <li>
-                <div class="bar-meta">
-                  <span>{{ row.label }}</span>
-                  <span>{{ row.count }}</span>
-                </div>
-                <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
-              </li>
-            }
-          </ul>
+          <p class="hint">Cuántos libros de cada sello</p>
+          @if (filteredEditorials().length === 0) {
+            <p class="muted">Sin editoriales que coincidan.</p>
+          } @else {
+            <ul class="bars">
+              @for (row of filteredEditorials(); track row.label) {
+                <li>
+                  <div class="bar-meta">
+                    <span>{{ row.label }}</span>
+                    <span>
+                      {{ row.count }}
+                      {{ row.count === 1 ? 'libro' : 'libros' }}
+                    </span>
+                  </div>
+                  <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+                </li>
+              }
+            </ul>
+          }
         </section>
 
         <section>
@@ -123,16 +180,99 @@
 
         <section class="wide">
           <h2>Gasto</h2>
-          <p class="hint">Lo invertido en la sala</p>
+          <p class="hint">
+            @if (v.gasto.libros > 0) {
+              Sobre {{ v.gasto.libros }}
+              {{ v.gasto.libros === 1 ? 'volumen' : 'volúmenes' }} con precio
+            } @else {
+              Aún no hay precios registrados
+            }
+          </p>
           <p class="spend">
             Total <strong>{{ v.gasto.total }} {{ v.gasto.moneda }}</strong>
-            · media {{ v.gasto.media }} {{ v.gasto.moneda }} por volumen
+            · media {{ v.gasto.media }} {{ v.gasto.moneda }} por volumen con precio
           </p>
         </section>
 
         <section class="wide">
+          <h2>Compras y gasto en el tiempo</h2>
+          <p class="hint">{{ periodHint() }}</p>
+          <div class="period-tabs" role="tablist" aria-label="Periodo">
+            <button
+              type="button"
+              role="tab"
+              class="period-tab"
+              [class.active]="periodGrain() === 'semanas'"
+              (click)="setGrain('semanas')"
+            >
+              Semanas
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="period-tab"
+              [class.active]="periodGrain() === 'meses'"
+              (click)="setGrain('meses')"
+            >
+              Meses
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="period-tab"
+              [class.active]="periodGrain() === 'anios'"
+              (click)="setGrain('anios')"
+            >
+              Años
+            </button>
+          </div>
+          @if (periodRows().length === 0) {
+            <p class="muted">Sin datos de compras aún.</p>
+          } @else {
+            <ul class="bars period-bars">
+              @for (row of periodRows(); track row.periodo) {
+                <li>
+                  <div class="bar-meta">
+                    <span>{{ row.periodo }}</span>
+                    <span class="period-nums">
+                      {{ row.libros }}
+                      {{ row.libros === 1 ? 'libro' : 'libros' }}
+                      · {{ row.gasto }} {{ v.gasto.moneda }}
+                    </span>
+                  </div>
+                  <div class="track dual">
+                    <span
+                      class="fill"
+                      title="Libros"
+                      [style.width.%]="row.pctLibros"
+                    ></span>
+                  </div>
+                  <div class="track dual">
+                    <span
+                      class="fill warm"
+                      title="Gasto"
+                      [style.width.%]="row.pctGasto"
+                    ></span>
+                  </div>
+                </li>
+              }
+            </ul>
+            <p class="period-legend muted">
+              Barra clara: libros comprados · barra cálida: gasto
+            </p>
+          }
+        </section>
+
+        <section class="wide">
           <h2>Puntuaciones</h2>
-          <p class="hint">Media {{ v.puntuacionMedia }} · distribución 1–10</p>
+          <p class="hint">
+            @if (v.puntuacionLibros > 0) {
+              Media {{ v.puntuacionMedia }} · {{ v.puntuacionLibros }}
+              {{ v.puntuacionLibros === 1 ? 'valorado' : 'valorados' }} · distribución 1–10
+            } @else {
+              Aún no hay puntuaciones · distribución 1–10
+            }
+          </p>
           <ul class="bars scores">
             @for (row of v.scoreBars; track row.score) {
               <li>
@@ -146,34 +286,16 @@
           </ul>
         </section>
 
-        <section class="wide">
-          <h2>Crecimiento</h2>
-          <p class="hint">Altas por mes (fecha de compra)</p>
-          @if (v.crecimiento.length === 0) {
-            <p class="muted">Sin datos de crecimiento aún.</p>
-          } @else {
-            <ul class="bars">
-              @for (row of v.crecimiento; track row.periodo) {
-                <li>
-                  <div class="bar-meta">
-                    <span>{{ row.periodo }}</span>
-                    <span>{{ row.count }}</span>
-                  </div>
-                  <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
-                </li>
-              }
-            </ul>
-          }
-        </section>
-
         <section>
           <h2>Figuras del cine</h2>
           <p class="hint">Más presentes en tus fichas</p>
-          @if (v.figurasTop.length === 0) {
-            <p class="muted">Aún sin figuras enlazadas.</p>
+          @if (filteredFiguras().length === 0) {
+            <p class="muted">
+              {{ q() ? 'Sin figuras que coincidan.' : 'Aún sin figuras enlazadas.' }}
+            </p>
           } @else {
             <ul class="figures">
-              @for (f of v.figurasTop; track f.nombre + f.role) {
+              @for (f of filteredFiguras(); track f.nombre + f.role) {
                 <li>
                   <span class="name">{{ f.nombre }}</span>
                   <span class="role">{{ f.roleLabel }}</span>

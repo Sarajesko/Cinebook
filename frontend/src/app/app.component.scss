@@ -90,9 +90,38 @@
 }
 
 .shell-main {
-  padding: 1rem clamp(1rem, 3vw, 1.5rem) 3rem;
+  padding: 1rem clamp(1rem, 3vw, 1.5rem) 2rem;
   max-width: 72rem;
   margin: 0 auto;
+  min-height: calc(100vh - 11rem);
+}
+
+.shell-footer {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 3vw, 1.5rem) 2rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.shell-footer p {
+  margin: 0;
+}
+
+.shell-footer .sep {
+  margin: 0 0.4rem;
+  opacity: 0.7;
+}
+
+.shell-footer .footnote {
+  margin-top: 0.35rem;
+  font-style: italic;
+  font-size: 0.8rem;
+  opacity: 0.85;
 }
 
 @media (max-width: 560px) {

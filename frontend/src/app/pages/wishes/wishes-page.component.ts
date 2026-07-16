@@ -1,16 +1,17 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { lenguaBandera } from '../../core/books/book.model';
 import { WishesApiService } from '../../core/wishes/wishes-api.service';
 import {
   Wish,
   sortWishes,
-  wishLenguaFlag,
   wishPriorityLabel,
 } from '../../core/wishes/wish.model';
+import { LangFlagComponent } from '../../shared/lang-flag.component';
 
 @Component({
   selector: 'app-wishes-page',
-  imports: [RouterLink],
+  imports: [RouterLink, LangFlagComponent],
   templateUrl: './wishes-page.component.html',
   styleUrl: './wishes-page.component.scss',
 })
@@ -23,7 +24,7 @@ export class WishesPageComponent implements OnInit {
   readonly deletingId = signal<string | null>(null);
 
   readonly wishPriorityLabel = wishPriorityLabel;
-  readonly wishLenguaFlag = wishLenguaFlag;
+  readonly lenguaBandera = lenguaBandera;
 
   ngOnInit(): void {
     this.reload();

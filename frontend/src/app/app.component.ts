@@ -11,6 +11,7 @@ import { AuthService } from './core/auth/auth.service';
 export class AppComponent {
   readonly brand = 'Cinebook';
   readonly tagline = 'Cinema Library';
+  readonly year = new Date().getFullYear();
   readonly auth = inject(AuthService);
 
   logout(): void {

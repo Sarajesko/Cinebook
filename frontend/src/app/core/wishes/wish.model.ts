@@ -3,7 +3,7 @@ export type Wish = {
   titulo: string;
   autores: string | null;
   isbn: string | null;
-  lengua: 'es' | 'en' | 'fr' | 'pt' | null;
+  lengua: 'es' | 'en' | 'fr' | 'pt' | 'ca' | null;
   paisEdicion: string | null;
   notas: string | null;
   prioridad: 'alta' | 'media' | 'baja' | string | null;
@@ -15,7 +15,7 @@ export type WishWritePayload = {
   titulo: string;
   autores?: string;
   isbn?: string;
-  lengua?: 'es' | 'en' | 'fr' | 'pt';
+  lengua?: 'es' | 'en' | 'fr' | 'pt' | 'ca';
   paisEdicion?: string;
   notas?: string;
   prioridad?: 'alta' | 'media' | 'baja';
@@ -56,11 +56,13 @@ export function wishLenguaFlag(lengua: string | null | undefined): string {
     case 'es':
       return '🇪🇸';
     case 'en':
-      return '🇺🇸';
+      return '🇺🇸🇬🇧';
     case 'fr':
       return '🇫🇷';
     case 'pt':
       return '🇵🇹';
+    case 'ca':
+      return '🏴󠁥󠁳󠁣󠁴󠁿';
     default:
       return '';
   }

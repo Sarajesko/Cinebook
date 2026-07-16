@@ -8,6 +8,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BooksService } from './books.service';
+import { IsbnLookupService } from './isbn-lookup.service';
 
 describe('BooksService', () => {
   let service: BooksService;
@@ -90,6 +91,10 @@ describe('BooksService', () => {
       providers: [
         BooksService,
         { provide: PrismaService, useValue: prisma },
+        {
+          provide: IsbnLookupService,
+          useValue: { lookup: jest.fn() },
+        },
       ],
     }).compile();
     service = module.get(BooksService);

@@ -18,14 +18,28 @@
 
         <div class="info">
           <p class="flagline">
-            <span class="flag">{{ flagEmoji(b.bandera) }}</span>
-            <span>{{ b.lengua | uppercase }} · {{ b.paisEdicion }}</span>
+            <span class="flag"><app-lang-flag class="large" [code]="b.bandera" /></span>
+            <span>
+              {{ b.bandera }}
+              @if (b.paisEdicion) {
+                · {{ b.paisEdicion }}
+              }
+            </span>
           </p>
           <h1>{{ b.titulo }}</h1>
           <p class="authors">{{ b.autores }}</p>
-          <p class="stars" [attr.aria-label]="b.puntuacion + ' de 10'">
-            {{ starsLabel(b.puntuacion) }}
-            <span class="score">{{ b.puntuacion }}/10</span>
+          <p
+            class="stars"
+            [attr.aria-label]="
+              b.puntuacion == null ? 'Sin puntuación' : b.puntuacion + ' de 10'
+            "
+          >
+            @if (b.puntuacion != null) {
+              {{ starsLabel(b.puntuacion) }}
+              <span class="score">{{ b.puntuacion }}/10</span>
+            } @else {
+              <span class="score muted">Sin puntuación</span>
+            }
           </p>
 
           <dl class="facts">
@@ -34,14 +48,30 @@
             <div><dt>ISBN</dt><dd>{{ b.isbn }}</dd></div>
             <div><dt>Estado</dt><dd>{{ estadoLabel(b.estado) }}</dd></div>
             <div><dt>Condición</dt><dd>{{ conditionLabel(b.condicion) }}</dd></div>
-            <div><dt>Precio</dt><dd>{{ b.precio }} {{ b.moneda }}</dd></div>
+            <div><dt>Precio</dt><dd>{{ priceLabel(b.precio, b.moneda) }}</dd></div>
             <div><dt>Compra</dt><dd>{{ b.haceCuanto }}</dd></div>
           </dl>
 
-          @if (b.directores.length || b.guionistas.length || b.actores.length || b.productores.length) {
+          @if (
+            b.directores.length ||
+            b.directoresFotografia.length ||
+            b.guionistas.length ||
+            b.actores.length ||
+            b.productores.length ||
+            b.bandaSonora.length
+          ) {
             <div class="figures">
               @if (b.directores.length) {
                 <p><strong>Directores:</strong> {{ b.directores.join(', ') }}</p>
+              }
+              @if (b.directoresFotografia.length) {
+                <p>
+                  <strong>Directores de fotografía:</strong>
+                  {{ b.directoresFotografia.join(', ') }}
+                </p>
+              }
+              @if (b.bandaSonora.length) {
+                <p><strong>Banda sonora:</strong> {{ b.bandaSonora.join(', ') }}</p>
               }
               @if (b.guionistas.length) {
                 <p><strong>Guionistas:</strong> {{ b.guionistas.join(', ') }}</p>

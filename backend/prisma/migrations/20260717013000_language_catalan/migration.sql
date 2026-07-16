@@ -1,0 +1,1 @@
+-- AlterEnum: Language adds `ca` (SQLite stores enums as TEXT; no table rewrite needed)

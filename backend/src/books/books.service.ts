@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CheckDuplicateDto } from './dto/check-duplicate.dto';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { IsbnLookupService } from './isbn-lookup.service';
 
 const bookInclude = {
   people: {
@@ -19,14 +20,22 @@ type BookWithPeople = Prisma.BookGetPayload<{ include: typeof bookInclude }>;
 
 const FLAG_BY_LANG: Record<string, string> = {
   es: 'ES',
-  en: 'USA',
+  en: 'US/UK',
   fr: 'FR',
   pt: 'PT',
+  ca: 'CAT',
 };
 
 @Injectable()
 export class BooksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly isbnLookup: IsbnLookupService,
+  ) {}
+
+  lookupIsbn(isbn: string) {
+    return this.isbnLookup.lookup(this.normalizeIsbn(isbn));
+  }
 
   async create(userId: string, dto: CreateBookDto) {
     const isbn = this.normalizeIsbn(dto.isbn);
@@ -41,14 +50,14 @@ export class BooksService {
           anio: dto.anio,
           editorial: dto.editorial.trim(),
           lengua: dto.lengua,
-          paisEdicion: dto.paisEdicion.trim(),
+          paisEdicion: dto.paisEdicion?.trim() || null,
           isbn,
           estado: dto.estado,
           fechaCompra: new Date(dto.fechaCompra),
           condicion: dto.condicion,
-          precio: dto.precio,
-          moneda: (dto.moneda ?? 'EUR').trim().toUpperCase(),
-          puntuacion: dto.puntuacion,
+          precio: dto.precio ?? null,
+          moneda: this.resolveMoneda(dto.moneda, dto.precio),
+          puntuacion: dto.puntuacion ?? null,
           caratula: dto.caratula?.trim() || null,
           notas: dto.notas?.trim() || null,
           dondeComprado: dto.dondeComprado?.trim() || null,
@@ -109,7 +118,7 @@ export class BooksService {
           }),
           ...(dto.lengua !== undefined && { lengua: dto.lengua }),
           ...(dto.paisEdicion !== undefined && {
-            paisEdicion: dto.paisEdicion.trim(),
+            paisEdicion: dto.paisEdicion?.trim() || null,
           }),
           ...(dto.isbn !== undefined && {
             isbn: this.normalizeIsbn(dto.isbn),
@@ -121,7 +130,9 @@ export class BooksService {
           ...(dto.condicion !== undefined && { condicion: dto.condicion }),
           ...(dto.precio !== undefined && { precio: dto.precio }),
           ...(dto.moneda !== undefined && {
-            moneda: dto.moneda.trim().toUpperCase(),
+            moneda: dto.moneda?.trim()
+              ? dto.moneda.trim().toUpperCase()
+              : null,
           }),
           ...(dto.puntuacion !== undefined && { puntuacion: dto.puntuacion }),
           ...(dto.caratula !== undefined && {
@@ -136,15 +147,19 @@ export class BooksService {
 
       if (
         dto.directores !== undefined ||
+        dto.directoresFotografia !== undefined ||
         dto.guionistas !== undefined ||
         dto.actores !== undefined ||
-        dto.productores !== undefined
+        dto.productores !== undefined ||
+        dto.bandaSonora !== undefined
       ) {
         await this.syncPeople(tx, userId, id, {
           directores: dto.directores,
+          directoresFotografia: dto.directoresFotografia,
           guionistas: dto.guionistas,
           actores: dto.actores,
           productores: dto.productores,
+          bandaSonora: dto.bandaSonora,
         });
       }
 
@@ -309,16 +324,23 @@ export class BooksService {
     bookId: string,
     figures: {
       directores?: string[];
+      directoresFotografia?: string[];
       guionistas?: string[];
       actores?: string[];
       productores?: string[];
+      bandaSonora?: string[];
     },
   ) {
     const roleMap: { role: PersonRole; names?: string[] }[] = [
       { role: PersonRole.director, names: figures.directores },
+      {
+        role: PersonRole.director_fotografia,
+        names: figures.directoresFotografia,
+      },
       { role: PersonRole.guionista, names: figures.guionistas },
       { role: PersonRole.actor, names: figures.actores },
       { role: PersonRole.productor, names: figures.productores },
+      { role: PersonRole.banda_sonora, names: figures.bandaSonora },
     ];
 
     const rolesToReplace = roleMap
@@ -376,12 +398,24 @@ export class BooksService {
       notas: book.notas,
       dondeComprado: book.dondeComprado,
       directores: byRole(PersonRole.director),
+      directoresFotografia: byRole(PersonRole.director_fotografia),
       guionistas: byRole(PersonRole.guionista),
       actores: byRole(PersonRole.actor),
       productores: byRole(PersonRole.productor),
+      bandaSonora: byRole(PersonRole.banda_sonora),
       createdAt: book.createdAt,
       updatedAt: book.updatedAt,
     };
+  }
+
+  private resolveMoneda(
+    moneda: string | null | undefined,
+    precio: number | null | undefined,
+  ): string | null {
+    const trimmed = moneda?.trim();
+    if (trimmed) return trimmed.toUpperCase();
+    if (precio != null) return 'EUR';
+    return null;
   }
 
   private relativeFrom(date: Date) {

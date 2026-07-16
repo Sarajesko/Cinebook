@@ -99,9 +99,9 @@ export class WishesService {
     const lengua = dto.lengua ?? wish.lengua;
     const paisEdicion = (dto.paisEdicion || wish.paisEdicion || '').trim();
 
-    if (!autores || !isbnRaw || !lengua || !paisEdicion) {
+    if (!autores || !isbnRaw || !lengua) {
       throw new BadRequestException(
-        'Completa autores, ISBN, lengua y país de edición para pasar a colección.',
+        'Completa autores, ISBN y lengua para pasar a colección.',
       );
     }
 
@@ -111,7 +111,7 @@ export class WishesService {
       autores,
       isbn: isbnRaw,
       lengua,
-      paisEdicion,
+      paisEdicion: paisEdicion || null,
       estado: dto.estado ?? ReadingState.recien_comprado,
     };
 

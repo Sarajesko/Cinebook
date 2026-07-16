@@ -14,6 +14,7 @@ describe('BookFormPageComponent', () => {
     create: jasmine.Spy;
     update: jasmine.Spy;
     checkDuplicate: jasmine.Spy;
+    lookupIsbn: jasmine.Spy;
   };
 
   beforeEach(async () => {
@@ -29,6 +30,9 @@ describe('BookFormPageComponent', () => {
           book: null,
           wishMatch: null,
         }),
+      ),
+      lookupIsbn: jasmine.createSpy('lookupIsbn').and.returnValue(
+        of({ found: false, source: null, isbn: '9780306406157' }),
       ),
     };
 
@@ -61,7 +65,6 @@ describe('BookFormPageComponent', () => {
       titulo: '',
       autores: '',
       editorial: '',
-      paisEdicion: '',
       isbn: '',
     });
     expect(component.formInvalid).toBeTrue();
@@ -93,17 +96,42 @@ describe('BookFormPageComponent', () => {
     expect(payload.puntuacion).toBe(8);
   });
 
+  it('allows saving without precio, moneda or puntuacion', () => {
+    component.form.patchValue({
+      titulo: 'Hitchcock',
+      autores: 'Truffaut',
+      anio: 1983,
+      editorial: 'Alianza',
+      lengua: 'es',
+      paisEdicion: 'España',
+      isbn: '9788420674237',
+      estado: 'por_leer',
+      fechaCompra: '2026-07-01',
+      condicion: 'nuevo',
+      precio: null,
+      moneda: '',
+      puntuacion: null,
+    });
+    expect(component.formInvalid).toBeFalse();
+    const payload = component.buildPayloadForTest();
+    expect(payload.precio).toBeNull();
+    expect(payload.moneda).toBeNull();
+    expect(payload.puntuacion).toBeNull();
+  });
+
   it('renders create title and scan button', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Añadir libro');
     expect(el.textContent).toContain('Escanear ISBN');
+    expect(el.textContent).toContain('Autocompletar ficha');
   });
 
-  it('applies scanned ISBN and runs duplicate check', () => {
+  it('applies scanned ISBN and runs duplicate check plus lookup', () => {
     component.applyIsbn('978-0-306-40615-7', true);
     expect(component.form.controls.isbn.value).toBe('9780306406157');
     expect(booksApi.checkDuplicate).toHaveBeenCalledWith(
       jasmine.objectContaining({ isbn: '9780306406157' }),
     );
+    expect(booksApi.lookupIsbn).toHaveBeenCalledWith('9780306406157');
   });
 });

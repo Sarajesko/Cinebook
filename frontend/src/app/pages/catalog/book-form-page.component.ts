@@ -62,28 +62,43 @@ export class BookFormPageComponent implements OnInit, OnDestroy {
   readonly scanning = signal(false);
   readonly scanHint = signal<string | null>(null);
   readonly wishHint = signal<string | null>(null);
+  readonly lookupBusy = signal(false);
+  readonly lookupHint = signal<string | null>(null);
 
-  readonly form = this.fb.nonNullable.group({
-    titulo: ['', [Validators.required, Validators.minLength(1)]],
-    autores: ['', [Validators.required, Validators.minLength(1)]],
-    anio: [new Date().getFullYear(), [Validators.required, Validators.min(1000), Validators.max(2100)]],
-    editorial: ['', [Validators.required]],
-    lengua: ['es' as 'es' | 'en' | 'fr' | 'pt', [Validators.required]],
-    paisEdicion: ['', [Validators.required]],
-    isbn: ['', [Validators.required, Validators.minLength(10)]],
-    estado: ['por_leer', [Validators.required]],
-    fechaCompra: [todayIsoDate(), [Validators.required]],
-    condicion: ['nuevo' as 'nuevo' | 'segunda_mano', [Validators.required]],
-    precio: [0, [Validators.required, Validators.min(0)]],
-    moneda: ['EUR', [Validators.required]],
-    puntuacion: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
-    caratula: [''],
-    notas: [''],
-    dondeComprado: [''],
-    directores: [''],
-    guionistas: [''],
-    actores: [''],
-    productores: [''],
+  readonly form = this.fb.group({
+    titulo: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(1)]),
+    autores: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(1)]),
+    anio: this.fb.nonNullable.control(new Date().getFullYear(), [
+      Validators.required,
+      Validators.min(1000),
+      Validators.max(2100),
+    ]),
+    editorial: this.fb.nonNullable.control('', [Validators.required]),
+    lengua: this.fb.nonNullable.control('es' as 'es' | 'en' | 'fr' | 'pt' | 'ca', [
+      Validators.required,
+    ]),
+    paisEdicion: this.fb.nonNullable.control(''),
+    isbn: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(10)]),
+    estado: this.fb.nonNullable.control('por_leer', [Validators.required]),
+    fechaCompra: this.fb.nonNullable.control(todayIsoDate(), [Validators.required]),
+    condicion: this.fb.nonNullable.control('nuevo' as 'nuevo' | 'segunda_mano', [
+      Validators.required,
+    ]),
+    precio: this.fb.control<number | null>(null, [Validators.min(0)]),
+    moneda: this.fb.nonNullable.control(''),
+    puntuacion: this.fb.control<number | null>(null, [
+      Validators.min(1),
+      Validators.max(10),
+    ]),
+    caratula: this.fb.nonNullable.control(''),
+    notas: this.fb.nonNullable.control(''),
+    dondeComprado: this.fb.nonNullable.control(''),
+    directores: this.fb.nonNullable.control(''),
+    directoresFotografia: this.fb.nonNullable.control(''),
+    guionistas: this.fb.nonNullable.control(''),
+    actores: this.fb.nonNullable.control(''),
+    productores: this.fb.nonNullable.control(''),
+    bandaSonora: this.fb.nonNullable.control(''),
   });
 
   ngOnInit(): void {
@@ -101,21 +116,23 @@ export class BookFormPageComponent implements OnInit, OnDestroy {
             anio: book.anio,
             editorial: book.editorial,
             lengua: book.lengua,
-            paisEdicion: book.paisEdicion,
+            paisEdicion: book.paisEdicion ?? '',
             isbn: book.isbn,
             estado: book.estado,
             fechaCompra: book.fechaCompra.slice(0, 10),
             condicion: book.condicion,
             precio: book.precio,
-            moneda: book.moneda || 'EUR',
+            moneda: book.moneda ?? '',
             puntuacion: book.puntuacion,
             caratula: book.caratula ?? '',
             notas: book.notas ?? '',
             dondeComprado: book.dondeComprado ?? '',
             directores: joinNames(book.directores),
+            directoresFotografia: joinNames(book.directoresFotografia),
             guionistas: joinNames(book.guionistas),
             actores: joinNames(book.actores),
             productores: joinNames(book.productores),
+            bandaSonora: joinNames(book.bandaSonora),
           });
           this.loading.set(false);
         },
@@ -158,6 +175,7 @@ export class BookFormPageComponent implements OnInit, OnDestroy {
     this.form.controls.isbn.markAsDirty();
     this.duplicate.set(null);
     this.wishHint.set(null);
+    this.lookupHint.set(null);
 
     if (fromScan) {
       void this.closeScanner();
@@ -165,6 +183,53 @@ export class BookFormPageComponent implements OnInit, OnDestroy {
     }
 
     this.runDuplicateCheck(isbn);
+    this.lookupFromIsbn(isbn);
+  }
+
+  lookupFromIsbn(isbnOverride?: string): void {
+    const isbn = normalizeIsbn(isbnOverride ?? this.form.controls.isbn.value ?? '');
+    if (!isbn || isbn.length < 10) {
+      this.lookupHint.set('Escribe un ISBN válido para autocompletar.');
+      return;
+    }
+
+    this.lookupBusy.set(true);
+    this.lookupHint.set('Buscando ficha por ISBN…');
+    this.booksApi.lookupIsbn(isbn).subscribe({
+      next: (result) => {
+        this.lookupBusy.set(false);
+        if (!result.found) {
+          this.lookupHint.set('No hay ficha pública para ese ISBN. Rellena a mano.');
+          return;
+        }
+
+        const patch: Record<string, string | number> = {};
+        if (result.titulo) patch['titulo'] = result.titulo;
+        if (result.autores) patch['autores'] = result.autores;
+        if (result.anio != null) patch['anio'] = result.anio;
+        if (result.editorial) patch['editorial'] = result.editorial;
+        if (result.lengua) patch['lengua'] = result.lengua;
+        if (result.paisEdicion) patch['paisEdicion'] = result.paisEdicion;
+        if (result.caratula) patch['caratula'] = result.caratula;
+        this.form.patchValue(patch);
+
+        const src =
+          result.source === 'google'
+            ? 'Google Books'
+            : result.source === 'openlibrary'
+              ? 'Open Library'
+              : 'portada online';
+        this.lookupHint.set(
+          result.titulo
+            ? `Ficha rellenada desde ${src}. Revisa y completa lo personal.`
+            : `Carátula encontrada (${src}). Completa el resto a mano.`,
+        );
+      },
+      error: () => {
+        this.lookupBusy.set(false);
+        this.lookupHint.set('No se pudo consultar el ISBN. Prueba más tarde o escribe a mano.');
+      },
+    });
   }
 
   onIsbnBlur(): void {
@@ -322,28 +387,43 @@ export class BookFormPageComponent implements OnInit, OnDestroy {
 
   private toPayload(): BookWritePayload {
     const v = this.form.getRawValue();
-    const caratula = v.caratula.trim();
+    const caratula = (v.caratula ?? '').trim();
+    const moneda = (v.moneda ?? '').trim();
+    const precio =
+      v.precio != null && v.precio !== ('' as unknown) && Number.isFinite(Number(v.precio))
+        ? Number(v.precio)
+        : null;
+    const puntuacion =
+      v.puntuacion != null &&
+      v.puntuacion !== ('' as unknown) &&
+      Number.isFinite(Number(v.puntuacion))
+        ? Number(v.puntuacion)
+        : null;
+
     return {
-      titulo: v.titulo.trim(),
-      autores: v.autores.trim(),
+      titulo: (v.titulo ?? '').trim(),
+      autores: (v.autores ?? '').trim(),
       anio: Number(v.anio),
-      editorial: v.editorial.trim(),
-      lengua: v.lengua,
-      paisEdicion: v.paisEdicion.trim(),
-      isbn: normalizeIsbn(v.isbn),
-      estado: v.estado,
-      fechaCompra: v.fechaCompra,
-      condicion: v.condicion,
-      precio: Number(v.precio),
-      moneda: v.moneda.trim() || 'EUR',
-      puntuacion: Number(v.puntuacion),
+      editorial: (v.editorial ?? '').trim(),
+      lengua: v.lengua as 'es' | 'en' | 'fr' | 'pt' | 'ca',
+      ...( (v.paisEdicion ?? '').trim()
+        ? { paisEdicion: (v.paisEdicion ?? '').trim() }
+        : { paisEdicion: null }),
+      isbn: normalizeIsbn(v.isbn ?? ''),
+      estado: v.estado as string,
+      fechaCompra: v.fechaCompra as string,
+      condicion: v.condicion as 'nuevo' | 'segunda_mano',
+      ...(precio != null ? { precio, moneda: moneda || 'EUR' } : { precio: null, moneda: null }),
+      ...(puntuacion != null ? { puntuacion } : { puntuacion: null }),
       ...(caratula ? { caratula } : {}),
-      notas: v.notas.trim() || undefined,
-      dondeComprado: v.dondeComprado.trim() || undefined,
+      notas: (v.notas ?? '').trim() || undefined,
+      dondeComprado: (v.dondeComprado ?? '').trim() || undefined,
       directores: splitNames(v.directores),
+      directoresFotografia: splitNames(v.directoresFotografia),
       guionistas: splitNames(v.guionistas),
       actores: splitNames(v.actores),
       productores: splitNames(v.productores),
+      bandaSonora: splitNames(v.bandaSonora),
     };
   }
 

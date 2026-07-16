@@ -26,9 +26,11 @@ const sample: Book = {
   notas: null,
   dondeComprado: null,
   directores: ['Alfred Hitchcock'],
+  directoresFotografia: [],
   guionistas: [],
   actores: [],
   productores: [],
+  bandaSonora: [],
 };
 
 describe('CatalogPageComponent', () => {
@@ -54,7 +56,8 @@ describe('CatalogPageComponent', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Hitchcock');
-    expect(el.textContent).toContain('🇪🇸');
+    expect(el.textContent).toContain('Hitchcock');
+    expect(el.querySelector('app-lang-flag')).toBeTruthy();
     expect(el.textContent).toContain('Nuevo');
   });
 

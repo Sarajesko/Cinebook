@@ -1,4 +1,3 @@
-import { UpperCasePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BooksApiService } from '../../core/books/books-api.service';
@@ -6,13 +5,14 @@ import {
   Book,
   conditionLabel,
   estadoLabel,
-  flagEmoji,
+  priceLabel,
   starsLabel,
 } from '../../core/books/book.model';
+import { LangFlagComponent } from '../../shared/lang-flag.component';
 
 @Component({
   selector: 'app-book-detail-page',
-  imports: [RouterLink, UpperCasePipe],
+  imports: [RouterLink, LangFlagComponent],
   templateUrl: './book-detail-page.component.html',
   styleUrl: './book-detail-page.component.scss',
 })
@@ -25,10 +25,10 @@ export class BookDetailPageComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  readonly flagEmoji = flagEmoji;
   readonly conditionLabel = conditionLabel;
   readonly estadoLabel = estadoLabel;
   readonly starsLabel = starsLabel;
+  readonly priceLabel = priceLabel;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

@@ -28,9 +28,11 @@ const hitchcock: Book = {
   notas: null,
   dondeComprado: null,
   directores: ['Alfred Hitchcock'],
+  directoresFotografia: [],
   guionistas: [],
   actores: [],
   productores: [],
+  bandaSonora: [],
 };
 
 const cahiers: Book = {
@@ -62,11 +64,13 @@ describe('catalog-filters', () => {
     expect(result.map((b) => b.id)).toEqual(['b2']);
   });
 
-  it('searches título, autor, ISBN and figuras', () => {
+  it('searches título, autor, editorial, ISBN and figuras', () => {
     expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: 'hitchcock' }).length).toBe(1);
     expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: 'truffaut' }).length).toBe(1);
     expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: '9788420674237' }).length).toBe(1);
     expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: 'godard' }).length).toBe(1);
+    expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: 'alianza' }).length).toBe(1);
+    expect(applyCatalogFilters(books, { ...EMPTY_FILTERS, q: 'gallimard' }).length).toBe(1);
   });
 
   it('filters by estado, condición, puntuación and año', () => {

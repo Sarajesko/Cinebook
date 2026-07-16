@@ -15,7 +15,7 @@
   } @else if (wishes().length === 0) {
     <div class="empty">
       <p class="empty-title">La lista de deseos está en blanco.</p>
-      <p class="muted">Añade títulos que buscas en feria o librería.</p>
+      <p class="muted">Añade títulos que buscas en mercadillos o en librerías.</p>
       <a class="btn" routerLink="/deseados/nuevo">Añadir el primero</a>
     </div>
   } @else {
@@ -30,7 +30,10 @@
                 <span>{{ wish.autores }}</span>
               }
               @if (wish.lengua) {
-                <span>{{ wishLenguaFlag(wish.lengua) }} {{ wish.lengua }}</span>
+                <span class="lang-row">
+                  <app-lang-flag [code]="wish.lengua" />
+                  {{ lenguaBandera(wish.lengua) }}
+                </span>
               }
               @if (wish.paisEdicion) {
                 <span>{{ wish.paisEdicion }}</span>
