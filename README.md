@@ -425,4 +425,4 @@ El servicio Prisma elige adaptador según `DATABASE_URL` (`file:…` → SQLite,
 
 ## Licencia
 
-Proyecto personal / **UNLICENSED** por ahora.
+[MIT](LICENSE) — software libre: puedes usar, modificar y redistribuir con la atribución correspondiente.
