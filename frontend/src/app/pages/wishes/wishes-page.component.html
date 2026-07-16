@@ -1,0 +1,65 @@
+<section class="wishes">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Aún no están en la sala</p>
+      <h1>Deseados</h1>
+      <p class="lead">Lo que buscas — no lo que ya tienes</p>
+    </div>
+    <a class="btn" routerLink="/deseados/nuevo">Añadir deseado</a>
+  </header>
+
+  @if (loading()) {
+    <p class="muted">Cargando deseos…</p>
+  } @else if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  } @else if (wishes().length === 0) {
+    <div class="empty">
+      <p class="empty-title">La lista de deseos está en blanco.</p>
+      <p class="muted">Añade títulos que buscas en feria o librería.</p>
+      <a class="btn" routerLink="/deseados/nuevo">Añadir el primero</a>
+    </div>
+  } @else {
+    <p class="count muted">{{ wishes().length }} {{ wishes().length === 1 ? 'deseado' : 'deseados' }} abiertos</p>
+    <ul class="list">
+      @for (wish of wishes(); track wish.id) {
+        <li [attr.data-prioridad]="wish.prioridad || 'media'">
+          <div class="main">
+            <h2>{{ wish.titulo }}</h2>
+            <p class="meta">
+              @if (wish.autores) {
+                <span>{{ wish.autores }}</span>
+              }
+              @if (wish.lengua) {
+                <span>{{ wishLenguaFlag(wish.lengua) }} {{ wish.lengua }}</span>
+              }
+              @if (wish.paisEdicion) {
+                <span>{{ wish.paisEdicion }}</span>
+              }
+              @if (wish.isbn) {
+                <span class="isbn">ISBN {{ wish.isbn }}</span>
+              }
+            </p>
+            @if (wish.notas) {
+              <p class="notas">{{ wish.notas }}</p>
+            }
+            <p class="prioridad">Prioridad: {{ wishPriorityLabel(wish.prioridad) }}</p>
+          </div>
+          <div class="actions">
+            <a class="btn accent" [routerLink]="['/deseados', wish.id, 'conseguir']">
+              Ya lo tengo
+            </a>
+            <a class="btn ghost" [routerLink]="['/deseados', wish.id, 'editar']">Editar</a>
+            <button
+              type="button"
+              class="btn ghost"
+              [disabled]="deletingId() === wish.id"
+              (click)="remove(wish)"
+            >
+              Quitar
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

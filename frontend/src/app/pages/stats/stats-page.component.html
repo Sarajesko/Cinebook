@@ -1,0 +1,200 @@
+<section class="stats">
+  <header class="head">
+    <h1>La sala en números</h1>
+    <p class="lead">El pulso de tu colección de cine</p>
+  </header>
+
+  @if (loading()) {
+    <p class="muted">Contando volúmenes…</p>
+  } @else if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  } @else {
+    @if (view(); as v) {
+    @if (v.empty) {
+      <div class="empty">
+        <p class="empty-title">Aún no hay números que contar.</p>
+        <p class="muted">Cuando la sala tenga volúmenes, aquí verás su composición.</p>
+        <a class="btn" routerLink="/catalogo/nuevo">Añadir el primero</a>
+      </div>
+    } @else {
+      <p class="overview">
+        <span class="big">{{ v.totalLibros }}</span>
+        {{ v.totalLibros === 1 ? 'volumen' : 'volúmenes' }} en la sala
+        · media {{ v.puntuacionMedia }}/10
+        · {{ v.gasto.total }} {{ v.gasto.moneda }} gastados
+      </p>
+
+      <div class="sections">
+        <section>
+          <h2>Lenguas</h2>
+          <p class="hint">Banderas de la colección</p>
+          <ul class="bars">
+            @for (row of v.byLengua; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.flag }} {{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>País de edición</h2>
+          <p class="hint">Dónde se publicaron</p>
+          <ul class="bars">
+            @for (row of v.byPais; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>Décadas</h2>
+          <p class="hint">Año de publicación</p>
+          <ul class="bars">
+            @for (row of v.byDecada; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>Editoriales</h2>
+          <p class="hint">Top de la sala</p>
+          <ul class="bars">
+            @for (row of v.byEditorial; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>Estado de lectura</h2>
+          <p class="hint">Por leer, leyendo, leído…</p>
+          <ul class="bars">
+            @for (row of v.byEstado; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill warm" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section>
+          <h2>Nuevo y segunda mano</h2>
+          <p class="hint">Condición de compra</p>
+          <ul class="bars">
+            @for (row of v.byCondicion; track row.label) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.label }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill warm" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section class="wide">
+          <h2>Gasto</h2>
+          <p class="hint">Lo invertido en la sala</p>
+          <p class="spend">
+            Total <strong>{{ v.gasto.total }} {{ v.gasto.moneda }}</strong>
+            · media {{ v.gasto.media }} {{ v.gasto.moneda }} por volumen
+          </p>
+        </section>
+
+        <section class="wide">
+          <h2>Puntuaciones</h2>
+          <p class="hint">Media {{ v.puntuacionMedia }} · distribución 1–10</p>
+          <ul class="bars scores">
+            @for (row of v.scoreBars; track row.score) {
+              <li>
+                <div class="bar-meta">
+                  <span>{{ row.score }}</span>
+                  <span>{{ row.count }}</span>
+                </div>
+                <div class="track"><span class="fill gold" [style.width.%]="row.pct"></span></div>
+              </li>
+            }
+          </ul>
+        </section>
+
+        <section class="wide">
+          <h2>Crecimiento</h2>
+          <p class="hint">Altas por mes (fecha de compra)</p>
+          @if (v.crecimiento.length === 0) {
+            <p class="muted">Sin datos de crecimiento aún.</p>
+          } @else {
+            <ul class="bars">
+              @for (row of v.crecimiento; track row.periodo) {
+                <li>
+                  <div class="bar-meta">
+                    <span>{{ row.periodo }}</span>
+                    <span>{{ row.count }}</span>
+                  </div>
+                  <div class="track"><span class="fill" [style.width.%]="row.pct"></span></div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section>
+          <h2>Figuras del cine</h2>
+          <p class="hint">Más presentes en tus fichas</p>
+          @if (v.figurasTop.length === 0) {
+            <p class="muted">Aún sin figuras enlazadas.</p>
+          } @else {
+            <ul class="figures">
+              @for (f of v.figurasTop; track f.nombre + f.role) {
+                <li>
+                  <span class="name">{{ f.nombre }}</span>
+                  <span class="role">{{ f.roleLabel }}</span>
+                  <span class="n">{{ f.count }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section>
+          <h2>Lista de deseados</h2>
+          <p class="hint">Lo que aún buscas</p>
+          <p class="wish-summary">
+            <span class="big-sm">{{ v.wishlistAbiertos }}</span>
+            {{ v.wishlistAbiertos === 1 ? 'deseado abierto' : 'deseados abiertos' }}
+          </p>
+          <a class="link" routerLink="/deseados">Ver deseados →</a>
+        </section>
+      </div>
+    }
+    }
+  }
+</section>

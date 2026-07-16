@@ -1,0 +1,104 @@
+<section class="form-page">
+  <p class="back"><a routerLink="/deseados">← Deseados</a></p>
+  <h1>Ya lo tengo</h1>
+  <p class="lead">
+    @if (wishTitle()) {
+      Pasa «{{ wishTitle() }}» a la colección y cierra el deseo
+    } @else {
+      Pasar deseado a la colección
+    }
+  </p>
+
+  @if (loading()) {
+    <p class="muted">Cargando…</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid">
+        <label>
+          Título *
+          <input formControlName="titulo" />
+        </label>
+        <label>
+          Autor(es) *
+          <input formControlName="autores" />
+        </label>
+        <label>
+          Año *
+          <input type="number" formControlName="anio" />
+        </label>
+        <label>
+          Editorial *
+          <input formControlName="editorial" />
+        </label>
+        <label>
+          Lengua *
+          <select formControlName="lengua">
+            <option value="es">Español 🇪🇸</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="pt">Português 🇵🇹</option>
+          </select>
+        </label>
+        <label>
+          País de edición *
+          <input formControlName="paisEdicion" />
+        </label>
+        <label>
+          ISBN *
+          <input formControlName="isbn" inputmode="numeric" />
+        </label>
+        <label>
+          Estado *
+          <select formControlName="estado">
+            <option value="recien_comprado">Recién comprado</option>
+            <option value="por_leer">Por leer</option>
+            <option value="leyendo">Leyendo</option>
+            <option value="leido">Leído</option>
+          </select>
+        </label>
+        <label>
+          Fecha de compra *
+          <input type="date" formControlName="fechaCompra" />
+        </label>
+        <label>
+          Condición *
+          <select formControlName="condicion">
+            <option value="nuevo">Nuevo</option>
+            <option value="segunda_mano">Segunda mano</option>
+          </select>
+        </label>
+        <label>
+          Precio *
+          <input type="number" step="0.01" formControlName="precio" />
+        </label>
+        <label>
+          Moneda *
+          <input formControlName="moneda" />
+        </label>
+        <label>
+          Puntuación (1–10) *
+          <input type="number" min="1" max="10" formControlName="puntuacion" />
+        </label>
+        <label>
+          Dónde comprado
+          <input formControlName="dondeComprado" />
+        </label>
+        <label class="full">
+          Notas
+          <textarea formControlName="notas" rows="2"></textarea>
+        </label>
+      </div>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <div class="actions">
+        <button type="submit" class="btn accent" [disabled]="saving()">
+          {{ saving() ? 'Pasando…' : 'Pasar a colección' }}
+        </button>
+        <a class="btn ghost" routerLink="/deseados">Cancelar</a>
+      </div>
+    </form>
+  }
+</section>

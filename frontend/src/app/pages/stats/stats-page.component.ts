@@ -1,26 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { StatsApiService } from '../../core/stats/stats-api.service';
+import {
+  StatsViewModel,
+  mapStatsToView,
+} from '../../core/stats/stats-view.mapper';
 
 @Component({
   selector: 'app-stats-page',
-  template: `
-    <section class="placeholder">
-      <h1>La sala en números</h1>
-      <p>Estadísticas — UI en un apartado posterior.</p>
-    </section>
-  `,
-  styles: `
-    .placeholder {
-      padding: 1rem 0 3rem;
-    }
-    h1 {
-      margin: 0 0 0.5rem;
-      font-size: 1.75rem;
-    }
-    p {
-      margin: 0;
-      opacity: 0.75;
-      font-style: italic;
-    }
-  `,
+  imports: [RouterLink],
+  templateUrl: './stats-page.component.html',
+  styleUrl: './stats-page.component.scss',
 })
-export class StatsPageComponent {}
+export class StatsPageComponent implements OnInit {
+  private readonly statsApi = inject(StatsApiService);
+
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly view = signal<StatsViewModel | null>(null);
+
+  ngOnInit(): void {
+    this.statsApi.overview().subscribe({
+      next: (data) => {
+        this.view.set(mapStatsToView(data));
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('No se pudieron cargar las estadísticas');
+        this.loading.set(false);
+      },
+    });
+  }
+}

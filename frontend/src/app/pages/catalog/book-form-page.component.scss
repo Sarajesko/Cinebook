@@ -1,0 +1,180 @@
+.form-page {
+  max-width: 48rem;
+  padding-bottom: 3rem;
+}
+
+.back {
+  margin: 0 0 1rem;
+}
+
+.back a {
+  color: inherit;
+  opacity: 0.75;
+  text-decoration: none;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+.lead {
+  margin: 0.35rem 0 1.5rem;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.muted {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+label.full {
+  grid-column: 1 / -1;
+}
+
+input,
+select,
+textarea {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid rgba(242, 235, 224, 0.25);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font: inherit;
+}
+
+.error {
+  color: #f0a8a0;
+  margin: 1rem 0 0;
+}
+
+.ok {
+  color: #b7d7b0;
+  margin: 1rem 0 0;
+}
+
+.banner {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid rgba(242, 235, 224, 0.25);
+}
+
+.banner.warn {
+  border-color: rgba(240, 168, 160, 0.5);
+}
+
+.banner.tip {
+  border-color: rgba(183, 215, 176, 0.45);
+}
+
+.banner p {
+  margin: 0 0 0.75rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  border: 0;
+  background: #e8dcc8;
+  color: #1a1410;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(242, 235, 224, 0.35);
+}
+
+.isbn-field {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+.scan-btn {
+  justify-self: start;
+  padding: 0.45rem 0.75rem;
+  font-weight: 500;
+}
+
+.scan-hint {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.tip-text {
+  color: #b7d7b0;
+  font-style: italic;
+}
+
+.scanner-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 6, 4, 0.82);
+}
+
+.scanner-panel {
+  width: min(28rem, 100%);
+  padding: 1.25rem;
+  background: #1a1410;
+  border: 1px solid rgba(242, 235, 224, 0.25);
+}
+
+.scanner-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.scanner-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 1rem 0;
+  object-fit: cover;
+  background: #000;
+}

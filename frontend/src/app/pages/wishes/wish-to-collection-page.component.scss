@@ -1,0 +1,104 @@
+.form-page {
+  max-width: 48rem;
+  padding-bottom: 3rem;
+}
+
+.back {
+  margin: 0 0 1rem;
+}
+
+.back a {
+  color: #b8c9d4;
+  text-decoration: none;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  color: #e8b86d;
+}
+
+.lead {
+  margin: 0.35rem 0 1.5rem;
+  font-style: italic;
+  opacity: 0.8;
+  color: #d7e6ef;
+}
+
+.muted {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+label.full {
+  grid-column: 1 / -1;
+}
+
+input,
+select,
+textarea {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid rgba(232, 184, 109, 0.35);
+  border-radius: 2px;
+  background: rgba(10, 20, 28, 0.55);
+  color: inherit;
+  font: inherit;
+}
+
+.error {
+  color: #f0a8a0;
+  margin: 1rem 0 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  border: 0;
+  background: #c5d4de;
+  color: #132029;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn.accent {
+  background: #e8b86d;
+  color: #1a1410;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(180, 200, 210, 0.4);
+}

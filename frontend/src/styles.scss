@@ -1,3 +1,17 @@
+:root {
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --ink: #f2ebe0;
+  --ink-muted: rgba(242, 235, 224, 0.72);
+  --paper: #120e0c;
+  --paper-mid: #1a1410;
+  --accent: #e8dcc8;
+  --accent-ink: #1a1410;
+  --line: rgba(242, 235, 224, 0.22);
+  --danger: #f0a8a0;
+  --ok: #b7d7b0;
+}
+
 *,
 *::before,
 *::after {
@@ -11,6 +25,35 @@ body {
 }
 
 body {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+.brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 0.98rem;
+  }
 }

@@ -7,19 +7,129 @@
     <a class="btn" routerLink="/catalogo/nuevo">Añadir libro</a>
   </header>
 
+  @if (!loading() && !error() && allBooks().length > 0) {
+    <form class="filters" [formGroup]="form" (submit)="$event.preventDefault()">
+      <div class="search-row">
+        <label class="search">
+          <span class="sr-only">Buscar</span>
+          <input
+            formControlName="q"
+            type="search"
+            placeholder="Buscar título, autor, ISBN o figura…"
+            autocomplete="off"
+          />
+        </label>
+        <button type="button" class="btn-ghost" (click)="toggleFilters()">
+          {{ filtersOpen() ? 'Ocultar filtros' : 'Filtros' }}
+        </button>
+        @if (active()) {
+          <button type="button" class="btn-ghost" (click)="clearFilters()">Limpiar</button>
+        }
+      </div>
+
+      @if (filtersOpen()) {
+        <div class="filter-grid">
+          <label>
+            Lengua
+            <select formControlName="lengua">
+              <option value="">Todas</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="pt">🇵🇹 Português</option>
+            </select>
+          </label>
+          <label>
+            País de edición
+            <input formControlName="pais" placeholder="p. ej. Portugal" />
+          </label>
+          <label>
+            Estado
+            <select formControlName="estado">
+              <option value="">Todos</option>
+              <option value="por_leer">Por leer</option>
+              <option value="leyendo">Leyendo</option>
+              <option value="leido">Leído</option>
+              <option value="recien_comprado">Recién comprado</option>
+            </select>
+          </label>
+          <label>
+            Condición
+            <select formControlName="condicion">
+              <option value="">Todas</option>
+              <option value="nuevo">Nuevo</option>
+              <option value="segunda_mano">Segunda mano</option>
+            </select>
+          </label>
+          <label>
+            Puntuación
+            <select formControlName="puntuacion">
+              <option value="">Cualquiera</option>
+              @for (n of [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; track n) {
+                <option [value]="n">{{ n }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            Año
+            <input formControlName="anio" type="number" min="1000" max="2100" placeholder="AAAA" />
+          </label>
+          <label>
+            Autor
+            <input formControlName="autor" />
+          </label>
+          <label>
+            Editorial
+            <input formControlName="editorial" />
+          </label>
+          <label>
+            Director
+            <input formControlName="director" />
+          </label>
+          <label>
+            Guionista
+            <input formControlName="guionista" />
+          </label>
+          <label>
+            Actor
+            <input formControlName="actor" />
+          </label>
+          <label>
+            Productor
+            <input formControlName="productor" />
+          </label>
+        </div>
+      }
+
+      <p class="result-count muted">
+        {{ filteredBooks().length }}
+        {{ filteredBooks().length === 1 ? 'volumen' : 'volúmenes' }}
+        @if (active()) {
+          <span> · filtrado</span>
+        }
+      </p>
+    </form>
+  }
+
   @if (loading()) {
     <p class="muted">Cargando la sala…</p>
   } @else if (error()) {
     <p class="error" role="alert">{{ error() }}</p>
-  } @else if (books().length === 0) {
+  } @else if (allBooks().length === 0) {
     <div class="empty">
       <p class="empty-title">La sala de lectura está vacía.</p>
       <p class="muted">Abre el primer libro.</p>
       <a class="btn" routerLink="/catalogo/nuevo">Añadir el primero</a>
     </div>
+  } @else if (filteredBooks().length === 0) {
+    <div class="empty">
+      <p class="empty-title">Ningún volumen coincide.</p>
+      <p class="muted">Prueba otra búsqueda o limpia los filtros.</p>
+      <button type="button" class="btn" (click)="clearFilters()">Limpiar filtros</button>
+    </div>
   } @else {
     <ul class="grid">
-      @for (book of books(); track book.id) {
+      @for (book of filteredBooks(); track book.id) {
         <li>
           <a class="card" [routerLink]="['/catalogo', book.id]">
             <div class="cover">

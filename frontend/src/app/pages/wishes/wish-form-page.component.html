@@ -1,0 +1,63 @@
+<section class="form-page">
+  <p class="back"><a routerLink="/deseados">← Deseados</a></p>
+  <h1>{{ isEdit() ? 'Editar deseado' : 'Añadir deseado' }}</h1>
+  <p class="lead">Lo que aún buscas para la sala</p>
+
+  @if (loading()) {
+    <p class="muted">Cargando…</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid">
+        <label class="full">
+          Título *
+          <input formControlName="titulo" />
+        </label>
+        <label>
+          Autor(es)
+          <input formControlName="autores" />
+        </label>
+        <label>
+          ISBN
+          <input formControlName="isbn" inputmode="numeric" />
+        </label>
+        <label>
+          Lengua
+          <select formControlName="lengua">
+            <option value="">Sin especificar</option>
+            <option value="es">Español 🇪🇸</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="pt">Português 🇵🇹</option>
+          </select>
+        </label>
+        <label>
+          País de edición
+          <input formControlName="paisEdicion" />
+        </label>
+        <label>
+          Prioridad
+          <select formControlName="prioridad">
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </label>
+        <label class="full">
+          Notas
+          <textarea formControlName="notas" rows="3" placeholder="p. ej. buscar en feria"></textarea>
+        </label>
+      </div>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <div class="actions">
+        <button type="submit" class="btn" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <a class="btn ghost" routerLink="/deseados">Cancelar</a>
+      </div>
+    </form>
+  }
+</section>
