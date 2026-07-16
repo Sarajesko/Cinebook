@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Language {
+  es
+  en
+  fr
+  pt
+}
+
+enum ReadingState {
+  por_leer
+  leyendo
+  leido
+  recien_comprado
+}
+
+enum PersonRole {
+  director
+  guionista
+  actor
+  productor
+}
+
+enum WishPriority {
+  alta
+  media
+  baja
+}
+
+enum PurchaseCondition {
+  nuevo
+  segunda_mano
+}
+
+model User {
+  id String @id @default(cuid())
+
+  // Email o username. (Validación real en apartado 03 — Auth)
+  handle String @unique
+  passwordHash String @map("password_hash")
+
+  books Book[]
+  wishes Wish[]
+  people Person[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Book {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Campos del contexto (v1)
+  titulo String
+  autores String
+  anio Int
+  editorial String
+  lengua Language
+  paisEdicion String @map("pais_edicion")
+  isbn String
+
+  estado ReadingState
+  fechaCompra DateTime @map("fecha_compra")
+
+  condicion PurchaseCondition
+  precio Float
+  moneda String @default("EUR")
+  puntuacion Int
+
+  caratula String?
+  notas String?
+  dondeComprado String? @map("donde_comprado")
+
+  // Figuras del cine con rol
+  people BookPerson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, isbn])
+  @@index([userId, isbn])
+  @@index([userId, titulo])
+}
+
+model Person {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Nombre canónico que el usuario escribe (no se fuerza normalización en v1)
+  nombre String
+
+  bookPeople BookPerson[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, nombre])
+}
+
+model BookPerson {
+  id String @id @default(cuid())
+
+  bookId String
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  personId String
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  role PersonRole
+
+  createdAt DateTime @default(now())
+
+  @@unique([bookId, personId, role])
+  @@index([role, personId])
+}
+
+model Wish {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  titulo String
+  autores String?
+  isbn String?
+  lengua Language?
+  paisEdicion String? @map("pais_edicion")
+  notas String?
+  prioridad WishPriority? @default(media)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, isbn])
+  @@index([userId, titulo])
+}

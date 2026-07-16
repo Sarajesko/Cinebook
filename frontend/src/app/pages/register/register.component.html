@@ -1,0 +1,28 @@
+<section class="auth-panel">
+  <h1>Crear cuenta</h1>
+  <p class="lead">Abre tu Cinebook</p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Usuario
+      <input formControlName="handle" autocomplete="username" />
+    </label>
+    <label>
+      Contraseña
+      <input type="password" formControlName="password" autocomplete="new-password" />
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Creando…' : 'Registrarme' }}
+    </button>
+  </form>
+
+  <p class="switch">
+    ¿Ya tienes cuenta?
+    <a routerLink="/login">Entrar</a>
+  </p>
+</section>

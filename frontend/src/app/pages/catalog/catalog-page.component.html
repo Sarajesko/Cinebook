@@ -1,0 +1,50 @@
+<section class="catalog">
+  <header class="catalog-head">
+    <div>
+      <h1>Catálogo</h1>
+      <p class="lead">La sala de lectura</p>
+    </div>
+    <a class="btn" routerLink="/catalogo/nuevo">Añadir libro</a>
+  </header>
+
+  @if (loading()) {
+    <p class="muted">Cargando la sala…</p>
+  } @else if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  } @else if (books().length === 0) {
+    <div class="empty">
+      <p class="empty-title">La sala de lectura está vacía.</p>
+      <p class="muted">Abre el primer libro.</p>
+      <a class="btn" routerLink="/catalogo/nuevo">Añadir el primero</a>
+    </div>
+  } @else {
+    <ul class="grid">
+      @for (book of books(); track book.id) {
+        <li>
+          <a class="card" [routerLink]="['/catalogo', book.id]">
+            <div class="cover">
+              @if (book.caratula) {
+                <img [src]="book.caratula" [alt]="'Carátula de ' + book.titulo" />
+              } @else {
+                <div class="cover-fallback" aria-hidden="true">{{ book.titulo.charAt(0) }}</div>
+              }
+              <span class="flag" [attr.title]="book.bandera">{{ flagEmoji(book.bandera) }}</span>
+            </div>
+            <div class="meta">
+              <h2>{{ book.titulo }}</h2>
+              <p class="authors">{{ book.autores }} · {{ book.anio }}</p>
+              <p class="row">
+                <span>{{ conditionLabel(book.condicion) }}</span>
+                <span>{{ book.precio }} {{ book.moneda }}</span>
+              </p>
+              <p class="stars" [attr.aria-label]="book.puntuacion + ' de 10'">
+                {{ starsLabel(book.puntuacion) }}
+              </p>
+              <p class="muted small">{{ book.haceCuanto }}</p>
+            </div>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>
