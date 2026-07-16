@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+frontend/dist/
+backend/dist/
+
+# Env & secrets
+.env
+.env.local
+**/.env
+!**/.env.example
+
+# Database (local SQLite — apartado 02)
+*.db
+*.db-journal
+
+# Logs & coverage
+logs/
+*.log
+coverage/
+.nyc_output/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Angular
+frontend/.angular/
+
+# Nest
+backend/uploads/
