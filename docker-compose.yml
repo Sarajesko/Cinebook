@@ -1,0 +1,43 @@
+# Cinebook — Docker Compose (Postgres + API Nest)
+# Front Angular sigue en el host: cd frontend && npm start
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cinebook-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cinebook}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cinebook}
+      POSTGRES_DB: ${POSTGRES_DB:-cinebook}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - cinebook_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cinebook} -d ${POSTGRES_DB:-cinebook}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cinebook-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cinebook}:${POSTGRES_PASSWORD:-cinebook}@db:5432/${POSTGRES_DB:-cinebook}
+      JWT_SECRET: ${JWT_SECRET:-cambia-este-secreto-en-compose}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  cinebook_pgdata:

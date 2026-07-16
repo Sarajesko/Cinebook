@@ -3,7 +3,28 @@
 Catálogo personal de **libros de cine**: inventario claro, anti-duplicados, lista de deseados y estadísticas.  
 Marca: **Cinebook** · subtexto **Cinema Library**.
 
-Repositorio: [github.com/Sarajesko/Cinebook](https://github.com/Sarajesko/Cinebook)
+**Repositorio:** [github.com/Sarajesko/Cinebook](https://github.com/Sarajesko/Cinebook)
+
+---
+
+## Índice
+
+1. [¿Para qué sirve?](#para-qué-sirve)
+2. [Qué incluye](#qué-incluye)
+3. [Estructura](#estructura-del-monorepo)
+4. [Requisitos](#requisitos)
+5. [Arranque rápido (elige un modo)](#arranque-rápido-elige-un-modo)
+6. [Modo A — Local con SQLite](#modo-a--local-con-sqlite-npm)
+7. [Modo B — Docker Compose (Postgres + API)](#modo-b--docker-compose-postgres--api)
+8. [Uso de la aplicación](#uso-de-la-aplicación)
+9. [Rutas del front](#rutas-del-front)
+10. [API REST](#api-rest)
+11. [Ejemplos curl](#ejemplos-curl)
+12. [Tests](#tests)
+13. [Stack y arquitectura](#stack-y-arquitectura)
+14. [Solución de problemas](#solución-de-problemas)
+15. [Roadmap](#roadmap)
+16. [Licencia](#licencia)
 
 ---
 
@@ -19,7 +40,7 @@ La interfaz sigue la metáfora de una **sala de lectura de cine** (atmósfera ed
 
 ---
 
-## Qué incluye la v1
+## Qué incluye
 
 | Área | Estado |
 |------|--------|
@@ -29,7 +50,7 @@ La interfaz sigue la metáfora de una **sala de lectura de cine** (atmósfera ed
 | Escaneo ISBN por cámara (con fallback manual) | Listo |
 | Wishlist UI + «Ya lo tengo» → colección | Listo |
 | Estadísticas «La sala en números» | Listo |
-| Docker / Postgres | Más adelante |
+| Docker Compose (PostgreSQL + API Nest) | Listo (front en el host) |
 
 ### Modelo de libro
 
@@ -47,31 +68,53 @@ Campos ligeros: título (obligatorio), autores, ISBN, lengua, país, notas, prio
 
 ```
 Cinebook/
-├── frontend/          Angular 19 — View (UI)
-├── backend/           NestJS 11 + Prisma — Controller / Model
-├── README.md
-└── .gitignore
+├── frontend/                 Angular 19 — View (UI)
+├── backend/                  NestJS 11 + Prisma — Controller / Model
+│   ├── Dockerfile            Imagen de la API (PostgreSQL)
+│   ├── docker-entrypoint.sh  Espera DB + prisma db push + arranque
+│   └── prisma/               Schema (SQLite en local; PG en la imagen)
+├── docker-compose.yml        Servicios db + api
+├── .env.example              Variables de Compose (copiar a `.env`)
+├── .gitattributes            Scripts .sh con fin de línea LF
+└── README.md
 ```
 
-| Carpeta | Rol MVC | Stack |
-|---------|---------|--------|
-| `frontend/` | View | Angular 19, SCSS, Fraunces + Source Serif 4 |
-| `backend/` | Controller + Model | NestJS, Passport JWT, Prisma 7, SQLite |
+| Carpeta / archivo | Rol |
+|-------------------|-----|
+| `frontend/` | View Angular |
+| `backend/` | Controller Nest + Model Prisma |
+| `docker-compose.yml` | Postgres 16 + API en contenedores |
+| `.env.example` | Plantilla de secretos/puertos para Compose |
 
 ---
 
 ## Requisitos
 
-- **Node.js** 22+
-- **npm** 11+
-- Navegador moderno (Chrome / Edge / Firefox / Safari)
-- Cámara del dispositivo (opcional) para escanear ISBN; si no hay permiso o falla, se escribe a mano
+| Herramienta | Para qué |
+|-------------|----------|
+| **Node.js 22+** y **npm 11+** | Front siempre; API en modo local |
+| **Docker Desktop** (o Docker Engine + Compose v2) | Modo B (Postgres + API) |
+| Navegador moderno | Chrome / Edge / Firefox / Safari |
+| Cámara (opcional) | Escaneo ISBN; si falla → entrada manual |
 
 ---
 
-## Arranque en local
+## Arranque rápido (elige un modo)
 
-### 1. API (NestJS)
+| Modo | Base de datos | API | Front |
+|------|---------------|-----|-------|
+| **A — Local** | SQLite (`file:./dev.db`) | `npm run start:dev` en `backend/` | `npm start` en `frontend/` |
+| **B — Docker** | PostgreSQL (contenedor) | Contenedor Nest | `npm start` en `frontend/` (host) |
+
+Ambos modos sirven el mismo contrato REST bajo `/api`. El front llama por defecto a `http://localhost:3000/api`.
+
+---
+
+## Modo A — Local con SQLite (npm)
+
+Ideal para desarrollar y pasar tests sin Docker.
+
+### 1. API
 
 ```bash
 cd backend
@@ -81,24 +124,23 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
-| Recurso | URL / valor |
-|---------|-------------|
-| API base | [http://localhost:3000/api](http://localhost:3000/api) |
+| Recurso | Valor |
+|---------|--------|
+| API | [http://localhost:3000/api](http://localhost:3000/api) |
 | Health | `GET /api` → `Cinebook API — Cinema Library` |
-| Base de datos | SQLite vía `DATABASE_URL` en `.env` (por defecto `file:./dev.db`) |
+| DB | SQLite (`DATABASE_URL="file:./dev.db"`) |
 
-Variables típicas en `backend/.env` (ver `.env.example`):
+Ejemplo `backend/.env`:
 
 ```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="cambia-esto-en-local"
-JWT_EXPIRES_IN="7d"
 PORT=3000
+CORS_ORIGIN=http://localhost:4200
+JWT_SECRET=cambia-este-secreto-en-local
+JWT_EXPIRES_IN=7d
+DATABASE_URL="file:./dev.db"
 ```
 
-### 2. Front (Angular)
-
-En otra terminal:
+### 2. Front
 
 ```bash
 cd frontend
@@ -106,12 +148,107 @@ npm install
 npm start
 ```
 
-| Recurso | URL |
-|---------|-----|
+| Recurso | Valor |
+|---------|--------|
 | App | [http://localhost:4200](http://localhost:4200) |
-| API consumida | `http://localhost:3000/api` ([`frontend/src/environments/environment.ts`](frontend/src/environments/environment.ts)) |
+| API | `http://localhost:3000/api` → [`frontend/src/environments/environment.ts`](frontend/src/environments/environment.ts) |
 
-La API debe estar en marcha antes de usar el front autenticado.
+---
+
+## Modo B — Docker Compose (Postgres + API)
+
+El front Angular **sigue en el host**. Compose solo levanta **PostgreSQL** y la **API Nest**.
+
+### Qué hace Compose
+
+```mermaid
+flowchart LR
+  browser[Navegador :4200] --> front[Angular en host]
+  front --> api[cinebook-api :3000]
+  api --> db[(cinebook-db Postgres)]
+```
+
+- Al arrancar la API: espera a Postgres → `prisma db push` → `node dist/src/main.js`.
+- Los datos de Postgres viven en el volumen Docker `cinebook_pgdata`.
+- En la **imagen** el schema Prisma se genera para **PostgreSQL**; en **local npm** sigue siendo **SQLite**.
+
+### 1. Variables
+
+En la **raíz** del monorepo:
+
+```bash
+cp .env.example .env
+```
+
+Edita al menos `JWT_SECRET`. Variables principales:
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `POSTGRES_USER` | `cinebook` | Usuario Postgres |
+| `POSTGRES_PASSWORD` | `cinebook` | Contraseña |
+| `POSTGRES_DB` | `cinebook` | Nombre de la base |
+| `POSTGRES_PORT` | `5433` | Puerto en el **host** → 5432 del contenedor |
+| `API_PORT` | `3000` | Puerto en el **host** → 3000 del contenedor |
+| `JWT_SECRET` | (ejemplo) | Secreto JWT — **cámbialo** |
+| `JWT_EXPIRES_IN` | `7d` | Caducidad del token |
+| `CORS_ORIGIN` | `http://localhost:4200` | Origen permitido del front |
+
+`POSTGRES_PORT` por defecto es **5433** para no chocar con un Postgres local en 5432.
+
+### 2. Levantar
+
+```bash
+docker compose up --build
+# o en segundo plano:
+docker compose up --build -d
+```
+
+| Servicio | Contenedor | URL típica |
+|----------|------------|------------|
+| API | `cinebook-api` | [http://localhost:3000/api](http://localhost:3000/api) |
+| Postgres | `cinebook-db` | `localhost:5433` (user/pass/db: `cinebook`) |
+
+Comprobar salud:
+
+```bash
+curl http://localhost:3000/api
+# → Cinebook API — Cinema Library
+
+docker compose ps
+docker compose logs -f api
+```
+
+### 3. Front contra la API en Docker
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Abre [http://localhost:4200](http://localhost:4200).
+
+Si tuviste que poner `API_PORT=3001` (puerto 3000 ocupado), o bien:
+
+- libera el 3000 y usa el default, **o**
+- cambia temporalmente `apiUrl` en [`frontend/src/environments/environment.ts`](frontend/src/environments/environment.ts) a `http://localhost:3001/api`.
+
+### 4. Parar / limpiar
+
+```bash
+docker compose down          # para contenedores; conserva datos
+docker compose down -v       # además borra el volumen Postgres
+docker compose build --no-cache api   # rebuild limpio de la API
+```
+
+### Archivos Docker relevantes
+
+| Archivo | Función |
+|---------|---------|
+| [`docker-compose.yml`](docker-compose.yml) | Servicios `db` + `api`, healthcheck, volumen |
+| [`backend/Dockerfile`](backend/Dockerfile) | Build multi-stage Node 22 |
+| [`backend/docker-entrypoint.sh`](backend/docker-entrypoint.sh) | Espera DB + `prisma db push` + arranque |
+| [`.env.example`](.env.example) | Plantilla de entorno Compose |
 
 ---
 
@@ -119,11 +256,11 @@ La API debe estar en marcha antes de usar el front autenticado.
 
 1. **Registro / login** — `/registro` o `/login` (handle + contraseña).
 2. **Catálogo** — `/catalogo`: grid de carátulas con bandera de lengua, condición, precio y estrellas.
-3. **Búsqueda y filtros** — texto libre (título, autor, ISBN, figuras) + filtros por lengua, país, estado, condición, puntuación, año, autor, editorial, director, guionista, actor, productor. Los filtros se sincronizan en la URL.
-4. **Alta / edición** — `/catalogo/nuevo` o `/catalogo/:id/editar`. Campos con `*` obligatorios. Botón **Escanear ISBN** abre la cámara; tras leer el código se rellena el ISBN y se lanza el chequeo anti-duplicado.
+3. **Búsqueda y filtros** — texto libre (título, autor, ISBN, figuras) + filtros por lengua, país, estado, condición, puntuación, año, autor, editorial, director, guionista, actor, productor. Los filtros van en la URL.
+4. **Alta / edición** — `/catalogo/nuevo` o `/catalogo/:id/editar`. Campos con `*` obligatorios. **Escanear ISBN** abre la cámara y dispara anti-duplicado.
 5. **Anti-duplicado** — aviso no bloqueante («¿Ya tienes este?») por ISBN o por título + autor + editorial. Puedes guardar igualmente.
-6. **Deseados** — `/deseados`: lo que buscas (lista tipo notebook, distinta del catálogo). **Ya lo tengo** completa la ficha del ejemplar, lo mete en colección como `recien_comprado` y cierra el deseo.
-7. **Estadísticas** — `/estadisticas`: «La sala en números» (lenguas con banderas, país, década, editorial, estado, condición, gasto, puntuaciones, crecimiento mensual, figuras, wishlist abiertos).
+6. **Deseados** — `/deseados`: lo que buscas. **Ya lo tengo** pasa el título a colección (`recien_comprado`) y cierra el deseo.
+7. **Estadísticas** — `/estadisticas`: «La sala en números» (lenguas, país, década, editorial, estado, condición, gasto, puntuaciones, crecimiento, figuras, wishlist).
 
 ---
 
@@ -172,7 +309,7 @@ Auth: header `Authorization: Bearer <accessToken>`.
 
 **Opcionales:** `caratula`, `notas`, `dondeComprado`, `directores[]`, `guionistas[]`, `actores[]`, `productores[]`, `moneda` (default `EUR`).
 
-La respuesta añade `bandera` (`ES` / `USA` / `FR` / `PT`) y `haceCuanto`. Un ISBN duplicado en colección responde **409** en el alta; el aviso previo va por `check-duplicate`.
+La respuesta añade `bandera` (`ES` / `USA` / `FR` / `PT`) y `haceCuanto`. ISBN duplicado en colección → **409**; el aviso previo va por `check-duplicate`.
 
 ### Wishlist
 
@@ -187,13 +324,18 @@ La respuesta añade `bandera` (`ES` / `USA` / `FR` / `PT`) y `haceCuanto`. Un IS
 
 | Método | Ruta | Auth | Notas |
 |--------|------|------|--------|
-| GET | `/stats` | sí | Overview: lengua, país, década, editorial, estado, condición, gasto, puntuaciones, crecimiento, figuras, wishlist abiertos |
+| GET | `/stats` | sí | Overview de la colección + wishlist abiertos |
 
 ---
 
-## Ejemplo rápido (API)
+## Ejemplos curl
+
+Sustituye el puerto si usas `API_PORT=3001`.
 
 ```bash
+# Health
+curl -s http://localhost:3000/api
+
 # Registro
 curl -s -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
@@ -208,7 +350,7 @@ curl -s -X POST http://localhost:3000/api/auth/login \
 curl -s http://localhost:3000/api/books \
   -H "Authorization: Bearer TOKEN"
 
-# Comprobar duplicado por ISBN
+# Anti-duplicado por ISBN
 curl -s -X POST http://localhost:3000/api/books/check-duplicate \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
@@ -227,18 +369,20 @@ curl -s http://localhost:3000/api/stats \
 # Backend — unitarios
 cd backend && npm test
 
-# Backend — e2e (incluye flujo crítico: login → alta → anti-duplicado → búsqueda → wishlist)
+# Backend — e2e (flujo crítico: login → alta → anti-duplicado → búsqueda → wishlist)
 cd backend && npm run test:e2e
 
 # Frontend — unitarios (Chrome headless)
 cd frontend && npm run test:ci
 ```
 
-| Suite | Comando | Contenido aproximado |
-|-------|---------|----------------------|
-| Backend unit | `npm test` | Auth, books, wishes, stats, Prisma |
-| Backend e2e | `npm run test:e2e` | HTTP real + flujo crítico v1 |
+| Suite | Comando | Contenido |
+|-------|---------|-----------|
+| Backend unit | `npm test` | Auth, books, wishes, stats |
+| Backend e2e | `npm run test:e2e` | HTTP real + flujo crítico |
 | Frontend | `npm run test:ci` | Componentes, filtros, ISBN, wishlist, stats |
+
+Los tests del backend usan **SQLite** (modo local), no el Postgres de Compose.
 
 ---
 
@@ -246,21 +390,13 @@ cd frontend && npm run test:ci
 
 | Capa | Tecnología |
 |------|------------|
-| View | Angular 19 + SCSS · tipografía Fraunces / Source Serif 4 |
+| View | Angular 19 + SCSS · Fraunces / Source Serif 4 · ZXing (ISBN) |
 | Controller | NestJS 11 · JWT (Passport) · ValidationPipe |
-| Model | Prisma 7 · SQLite (`better-sqlite3`) |
+| Model | Prisma 7 · SQLite local (`better-sqlite3`) · PostgreSQL en Docker (`@prisma/adapter-pg` + `pg`) |
 
 Arquitectura **MVC**: Model (Prisma) · Controller (Nest REST) · View (Angular).
 
-Escaneo de códigos de barras en el front: **ZXing** (`@zxing/browser`).
-
----
-
-## Roadmap (más adelante)
-
-- **Docker Compose** con PostgreSQL + API Nest (sustituir o complementar SQLite local).
-- Posible experimentación con **FastAPI** como API alternativa (no sustituye Nest en la v1).
-- Autocompletar ficha / carátula por ISBN vía APIs externas (Open Library, Google Books, etc.).
+El servicio Prisma elige adaptador según `DATABASE_URL` (`file:…` → SQLite, `postgresql://…` → Postgres).
 
 ---
 
@@ -268,11 +404,22 @@ Escaneo de códigos de barras en el front: **ZXing** (`@zxing/browser`).
 
 | Problema | Qué revisar |
 |----------|-------------|
-| Front no carga datos / 401 | API en `localhost:3000`; token en localStorage; CORS no aplica en mismo origen vía proxy si lo configuras, por defecto se llama a `environment.apiUrl` |
-| Error de Prisma / DB | `npx prisma migrate dev` con `DATABASE_URL` correcto |
-| Escaneo ISBN no abre cámara | Permiso del navegador (HTTPS o localhost); usa entrada manual |
-| ISBN ya existe (409) | Otro libro tuyo con el mismo ISBN; usa `check-duplicate` o edita el existente |
-| Tests e2e fallan | Que no haya otro proceso usando la misma DB de test; ejecutar `npm run test:e2e` en `backend/` |
+| Front 401 / no carga datos | API arriba; `environment.apiUrl` coincide con el puerto real (`3000` o `API_PORT`) |
+| `Bind … 3000` / `5432` already allocated | En `.env`: `API_PORT=3001`, `POSTGRES_PORT=5433` (ya es el default de Postgres en Compose) |
+| `exec docker-entrypoint.sh: no such file` | Fines de línea CRLF; el Dockerfile hace `sed` a LF; hay `.gitattributes` para `*.sh` |
+| API Docker reinicia en bucle | `docker compose logs api`; suele ser DB aún no lista o fallo de `prisma db push` |
+| Prisma / migrate en local | `npx prisma migrate dev` con `DATABASE_URL="file:./dev.db"` |
+| Escaneo ISBN sin cámara | Permiso del navegador (HTTPS o localhost); escribe el ISBN a mano |
+| ISBN 409 | Ya tienes ese ISBN; usa `check-duplicate` o edita el libro existente |
+| Tests e2e fallan | Ejecutar solo en `backend/`; no mezclar con otra instancia usando la misma DB de test |
+
+---
+
+## Roadmap
+
+- Contener el front (nginx) en Compose — opcional.
+- Autocompletar ficha / carátula por ISBN (Open Library, Google Books, etc.).
+- FastAPI **no** forma parte del camino principal (Nest es la API de Cinebook).
 
 ---
 
