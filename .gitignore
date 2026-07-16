@@ -34,3 +34,8 @@ frontend/.angular/
 
 # Nest
 backend/uploads/
+
+# Product docs (local only — no publicar en GitHub)
+contexto.md
+ideas.md
+checklist.md

@@ -1,6 +1,6 @@
 # Cinebook — Cinema Library
 
-Catálogo personal de libros de cine. Documentación de producto: [`contexto.md`](contexto.md), [`ideas.md`](ideas.md), [`checklist.md`](checklist.md).
+Catálogo personal de libros de cine.
 
 ## Estructura
 
@@ -42,9 +42,5 @@ App: [http://localhost:4200](http://localhost:4200)
 | Capa | Tecnología |
 |------|------------|
 | View | Angular |
-| Controller | NestJS + JWT (auth en checklist 03) |
-| Model | Prisma + SQLite local (checklist 02); PostgreSQL más adelante |
-
-## Checklist
-
-El desarrollo sigue [`checklist.md`](checklist.md): un apartado a la vez; avanzar con `siguiente` en el chat.
+| Controller | NestJS + JWT |
+| Model | Prisma + SQLite local; PostgreSQL más adelante |
