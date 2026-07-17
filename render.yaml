@@ -1,0 +1,20 @@
+# Blueprint opcional: también se puede crear el Web Service a mano en el dashboard.
+# Neon se configura aparte; pega DATABASE_URL en Environment.
+
+services:
+  - type: web
+    name: cinebook
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

@@ -93,7 +93,8 @@ Cinebook/
 │   └── prisma/               Schema (SQLite en local; PG en la imagen)
 ├── docs/screenshots/         Capturas reales de la UI
 ├── Dockerfile                Deploy full (UI + API, una URL)
-├── railway.toml              Hint para Railway
+├── render.yaml               Blueprint Render (opcional)
+├── railway.toml              Hint Railway (alternativa de pago)
 ├── .github/workflows/        CI (tests)
 ├── docker-compose.yml        Servicios db + api (local)
 ├── .env.example              Variables de Compose (copiar a `.env`)
@@ -446,39 +447,62 @@ El servicio Prisma elige adaptador según `DATABASE_URL` (`file:…` → SQLite,
 
 A diferencia de un sitio HTML estático (p. ej. GitHub Pages), Cinebook necesita **API + base de datos**. El `Dockerfile` de la raíz empaqueta **front + API en una sola URL**.
 
-### Opción recomendada — Railway (unos minutos)
+### Opción recomendada (gratis) — Render + Neon
 
-1. Crea cuenta en [railway.app](https://railway.app) e inicia un **New Project**.
-2. **Add PostgreSQL** (plugin / database).
-3. **Deploy from GitHub** → elige `Sarajesko/Cinebook`.
-   - Root directory: `/` (usa el `Dockerfile` de la raíz y `railway.toml`).
-4. En la API/servicio web, variables de entorno:
-   - `DATABASE_URL` — Railway la inyecta al enlazar Postgres (referencia a la variable del plugin).
-   - `JWT_SECRET` — cadena larga aleatoria (no uses el default de Compose).
-   - `CORS_ORIGIN` — la URL pública del servicio (p. ej. `https://cinebook-production-xxxx.up.railway.app`), o `*` en demo corta.
-   - `PORT` — Railway lo define solo; no hace falta fijarlo.
-5. Genera dominio público (**Settings → Networking → Generate domain**).
-6. Abre la URL: verás login / registro. Crea **tu cuenta** y, si quieres, otra para tu amigo (o que él se registre).
+#### 1) Neon (Postgres gratis)
 
-Cada persona con su usuario ve **su** catálogo (los datos no se mezclan).
+1. Entra en [neon.tech](https://neon.tech) y crea cuenta (GitHub OK).
+2. **Create project** → nombre `cinebook`, región cercana (p. ej. Frankfurt / España si aparece).
+3. En **Dashboard → Connection details** copia la URL **Connection string** (URI).
+   - Debe parecerse a: `postgresql://…@ep-….neon.tech/neondb?sslmode=require`
+   - Usa la de ** pooled** o la normal; ambas valen. Quédate con `sslmode=require`.
 
-### Alternativa — Render
+#### 2) Render (web gratis)
 
-Misma idea: Web Service con el `Dockerfile` de la raíz + base **PostgreSQL**, mismas variables (`DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`).
+1. Entra en [render.com](https://render.com) con GitHub.
+2. **New → Web Service** → conecta el repo `Sarajesko/Cinebook`.
+3. Ajustes:
+   - **Language / Runtime:** Docker
+   - **Branch:** `main`
+   - **Dockerfile path:** `./Dockerfile` (raíz)
+   - **Instance type:** Free
+4. **Environment** (variables):
+
+| Key | Value |
+|-----|--------|
+| `DATABASE_URL` | la URI de Neon (paso 1) |
+| `JWT_SECRET` | inventa una cadena larga (p. ej. 32+ caracteres) |
+| `CORS_ORIGIN` | `*` (demo) o tu URL de Render cuando la tengas |
+| `NODE_ENV` | `production` |
+
+`PORT` lo pone Render solo; no lo fuerces.
+
+5. **Create Web Service** y espera el primer build (puede tardar **10–15 min**: compila Angular + Nest).
+6. Cuando esté **Live**, abre la URL `https://cinebook-xxxx.onrender.com`.
+7. Regístrate tú; tu amigo puede crear su propia cuenta (catálogos separados).
+
+#### Notas del plan free
+
+- Si nadie entra un rato, Render **duerme** el servicio: la siguiente visita tarda ~30–60 s.
+- Neon free también puede pausar la DB: el arranque espera a que despierte (ya contemplado en el entrypoint).
+- Si el build falla por memoria, reintenta o avisa: se puede aligerar el Dockerfile.
+
+### Alternativa de pago baja — Railway (~5 €/mes)
+
+Más cómoda (casi no duerme). Guía antigua en commits previos / misma idea: Postgres + `Dockerfile` raíz + `JWT_SECRET` + `DATABASE_URL`.
 
 ### Qué no hace falta
 
 - GitHub Pages solo (no hay backend ahí).
-- Desplegar Angular y Nest por separado (este Dockerfile ya sirve el UI desde Nest en `/` y la API en `/api`).
+- Desplegar Angular y Nest por separado (este Dockerfile ya sirve el UI en `/` y la API en `/api`).
 
 ### Local vs producción
 
-| | Local | Online |
+| | Local | Online (Render + Neon) |
 |--|--------|--------|
-| Front | `ng serve` → `localhost:4200` | incluido en la misma URL |
+| Front | `ng serve` → `localhost:4200` | misma URL |
 | API | Nest o Compose | misma URL `/api` |
-| DB | SQLite o Postgres Compose | Postgres del hosting |
-
+| DB | SQLite o Postgres Compose | Neon |
 ---
 
 ## Roadmap
