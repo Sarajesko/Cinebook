@@ -11,20 +11,21 @@ Marca: **Cinebook** · subtexto **Cinema Library**.
 
 1. [¿Para qué sirve?](#para-qué-sirve)
 2. [Qué incluye](#qué-incluye)
-3. [Estructura](#estructura-del-monorepo)
-4. [Requisitos](#requisitos)
-5. [Arranque rápido (elige un modo)](#arranque-rápido-elige-un-modo)
-6. [Modo A — Local con SQLite](#modo-a--local-con-sqlite-npm)
-7. [Modo B — Docker Compose (Postgres + API)](#modo-b--docker-compose-postgres--api)
-8. [Uso de la aplicación](#uso-de-la-aplicación)
-9. [Rutas del front](#rutas-del-front)
-10. [API REST](#api-rest)
-11. [Ejemplos curl](#ejemplos-curl)
-12. [Tests](#tests)
-13. [Stack y arquitectura](#stack-y-arquitectura)
-14. [Solución de problemas](#solución-de-problemas)
-15. [Roadmap](#roadmap)
-16. [Licencia](#licencia)
+3. [Capturas](#capturas)
+4. [Estructura](#estructura-del-monorepo)
+5. [Requisitos](#requisitos)
+6. [Arranque rápido (elige un modo)](#arranque-rápido-elige-un-modo)
+7. [Modo A — Local con SQLite](#modo-a--local-con-sqlite-npm)
+8. [Modo B — Docker Compose (Postgres + API)](#modo-b--docker-compose-postgres--api)
+9. [Uso de la aplicación](#uso-de-la-aplicación)
+10. [Rutas del front](#rutas-del-front)
+11. [API REST](#api-rest)
+12. [Ejemplos curl](#ejemplos-curl)
+13. [Tests](#tests)
+14. [Stack y arquitectura](#stack-y-arquitectura)
+15. [Solución de problemas](#solución-de-problemas)
+16. [Roadmap](#roadmap)
+17. [Licencia](#licencia)
 
 ---
 
@@ -44,23 +45,36 @@ La interfaz sigue la metáfora de una **sala de lectura de cine** (atmósfera ed
 
 | Área | Estado |
 |------|--------|
-| API NestJS (auth JWT, libros, wishlist, stats, anti-duplicado) | Listo |
+| API NestJS (auth JWT, libros, wishlist, stats, anti-duplicado, ISBN lookup) | Listo |
 | Front Angular: login, catálogo, ficha, alta / edición | Listo |
-| Filtros y búsqueda en catálogo | Listo |
+| Filtros y búsqueda (título, editorial, directores, ISBN…) | Listo |
 | Escaneo ISBN por cámara (con fallback manual) | Listo |
+| Autocompletado de ficha / carátula (Google Books → Open Library → Bookcover) | Listo |
 | Wishlist UI + «Ya lo tengo» → colección | Listo |
-| Estadísticas «La sala en números» | Listo |
+| Estadísticas «La sala en números» (periodos, buscador, editoriales) | Listo |
+| Favicon + banderas SVG (incl. catalán) | Listo |
 | Docker Compose (PostgreSQL + API Nest) | Listo (front en el host) |
+| CI GitHub Actions (tests en push/PR) | Listo |
 
 ### Modelo de libro
 
-**Obligatorios:** título, autores, año, editorial, lengua (bandera **ES / USA / FR / PT**), país de edición, **ISBN**, estado de lectura, fecha de compra (se muestra como «hace X»), condición (**nuevo** / **segunda mano**), **precio**, **puntuación 1–10**.
+**Obligatorios:** título, autores, año, editorial, **lengua** (`es` / `ca` / `en` / `fr` / `pt` → códigos **ES**, **CAT**, **US/UK**, **FR**, **PT**), **ISBN**, estado de lectura, fecha de compra (se muestra como «hace X»), condición (**nuevo** / **segunda mano**).
 
-**Opcionales:** carátula (URL), notas, dónde comprado, figuras del cine (directores, guionistas, actores, productores).
+**Opcionales:** país de edición, **precio** y moneda, **puntuación 1–10**, carátula (URL), notas, dónde comprado, figuras del cine (**directores**, **directores de fotografía**, **banda sonora**, guionistas, actores, productores).
+
+El autocompletado por ISBN rellena título, autores, año, editorial, lengua, carátula y, si hay lengua clara, sugiere país.
 
 ### Modelo de deseado (wishlist)
 
-Campos ligeros: título (obligatorio), autores, ISBN, lengua, país, notas, prioridad (`alta` / `media` / `baja`).
+Campos ligeros: título (obligatorio), autores, ISBN, lengua (mismas opciones), país, notas, prioridad (`alta` / `media` / `baja`).
+
+---
+
+## Capturas
+
+| Catálogo | Ficha | Estadísticas |
+|----------|-------|--------------|
+| ![Catálogo](docs/screenshots/catalogo.jpg) | ![Ficha](docs/screenshots/ficha.jpg) | ![Estadísticas](docs/screenshots/estadisticas.jpg) |
 
 ---
 
@@ -73,9 +87,12 @@ Cinebook/
 │   ├── Dockerfile            Imagen de la API (PostgreSQL)
 │   ├── docker-entrypoint.sh  Espera DB + prisma db push + arranque
 │   └── prisma/               Schema (SQLite en local; PG en la imagen)
+├── docs/screenshots/         Capturas para el README
+├── .github/workflows/        CI (tests)
 ├── docker-compose.yml        Servicios db + api
 ├── .env.example              Variables de Compose (copiar a `.env`)
 ├── .gitattributes            Scripts .sh con fin de línea LF
+├── LICENSE                   MIT
 └── README.md
 ```
 
@@ -83,6 +100,7 @@ Cinebook/
 |-------------------|-----|
 | `frontend/` | View Angular |
 | `backend/` | Controller Nest + Model Prisma |
+| `docs/screenshots/` | Imágenes del escaparate |
 | `docker-compose.yml` | Postgres 16 + API en contenedores |
 | `.env.example` | Plantilla de secretos/puertos para Compose |
 
@@ -378,11 +396,13 @@ cd frontend && npm run test:ci
 
 | Suite | Comando | Contenido |
 |-------|---------|-----------|
-| Backend unit | `npm test` | Auth, books, wishes, stats |
+| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup |
 | Backend e2e | `npm run test:e2e` | HTTP real + flujo crítico |
 | Frontend | `npm run test:ci` | Componentes, filtros, ISBN, wishlist, stats |
 
 Los tests del backend usan **SQLite** (modo local), no el Postgres de Compose.
+
+En cada push/PR a `main`, GitHub Actions ejecuta las suites unitarias (backend + front) y los e2e del backend (`.github/workflows/ci.yml`).
 
 ---
 
@@ -417,8 +437,9 @@ El servicio Prisma elige adaptador según `DATABASE_URL` (`file:…` → SQLite,
 
 ## Roadmap
 
+- Publicar demo online (API + front) para probar sin instalar.
+- Identificador `SIN-ISBN-…` cuando el código no es legible (segunda mano).
 - Contener el front (nginx) en Compose — opcional.
-- Autocompletar ficha / carátula por ISBN (Open Library, Google Books, etc.).
 - FastAPI **no** forma parte del camino principal (Nest es la API de Cinebook).
 
 ---
