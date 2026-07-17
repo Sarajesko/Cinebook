@@ -1,5 +1,7 @@
 # Cinebook — Cinema Library
 
+[![CI](https://github.com/Sarajesko/Cinebook/actions/workflows/ci.yml/badge.svg)](https://github.com/Sarajesko/Cinebook/actions/workflows/ci.yml)
+
 Catálogo personal de **libros de cine**: inventario claro, anti-duplicados, lista de deseados y estadísticas.  
 Marca: **Cinebook** · subtexto **Cinema Library**.
 
