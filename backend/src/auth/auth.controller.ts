@@ -1,4 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import {
+  THROTTLE_AUTH_LIMIT,
+  THROTTLE_TTL_MS,
+} from '../throttle.constants';
 import { AuthService } from './auth.service';
 import type { AuthUser } from './current-user.decorator';
 import { CurrentUser } from './current-user.decorator';
@@ -10,11 +15,13 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @Throttle({ default: { limit: THROTTLE_AUTH_LIMIT, ttl: THROTTLE_TTL_MS } })
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
   }
 
+  @Throttle({ default: { limit: THROTTLE_AUTH_LIMIT, ttl: THROTTLE_TTL_MS } })
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);

@@ -9,9 +9,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { AuthUser } from '../auth/current-user.decorator';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  THROTTLE_ISBN_LIMIT,
+  THROTTLE_TTL_MS,
+} from '../throttle.constants';
 import { BooksService } from './books.service';
 import { CheckDuplicateDto } from './dto/check-duplicate.dto';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -40,6 +45,7 @@ export class BooksController {
     return this.books.findAll(user.userId);
   }
 
+  @Throttle({ default: { limit: THROTTLE_ISBN_LIMIT, ttl: THROTTLE_TTL_MS } })
   @Get('isbn-lookup')
   lookupIsbn(@Query('isbn') isbn: string) {
     return this.books.lookupIsbn(isbn ?? '');

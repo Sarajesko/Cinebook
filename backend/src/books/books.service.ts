@@ -37,43 +37,57 @@ export class BooksService {
     return this.isbnLookup.lookup(this.normalizeIsbn(isbn));
   }
 
+  /**
+   * Crea libro + people dentro de un tx externo (p. ej. toCollection atómico).
+   * No busca wishMatch: eso queda fuera de la mutación.
+   */
+  async createInTx(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    dto: CreateBookDto,
+  ) {
+    const isbn = this.normalizeIsbn(dto.isbn);
+    await this.assertIsbnFree(userId, isbn, undefined, tx);
+
+    const created = await tx.book.create({
+      data: {
+        userId,
+        titulo: dto.titulo.trim(),
+        autores: dto.autores.trim(),
+        anio: dto.anio,
+        editorial: dto.editorial.trim(),
+        lengua: dto.lengua,
+        paisEdicion: dto.paisEdicion?.trim() || null,
+        isbn,
+        estado: dto.estado,
+        fechaCompra: new Date(dto.fechaCompra),
+        condicion: dto.condicion,
+        precio: dto.precio ?? null,
+        moneda: this.resolveMoneda(dto.moneda, dto.precio),
+        puntuacion: dto.puntuacion ?? null,
+        caratula: dto.caratula?.trim() || null,
+        notas: dto.notas?.trim() || null,
+        dondeComprado: dto.dondeComprado?.trim() || null,
+      },
+    });
+
+    await this.syncPeople(tx, userId, created.id, dto);
+    const book = await tx.book.findUniqueOrThrow({
+      where: { id: created.id },
+      include: bookInclude,
+    });
+    return this.toResponse(book);
+  }
+
   async create(userId: string, dto: CreateBookDto) {
     const isbn = this.normalizeIsbn(dto.isbn);
-    await this.assertIsbnFree(userId, isbn);
-
-    const book = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.book.create({
-        data: {
-          userId,
-          titulo: dto.titulo.trim(),
-          autores: dto.autores.trim(),
-          anio: dto.anio,
-          editorial: dto.editorial.trim(),
-          lengua: dto.lengua,
-          paisEdicion: dto.paisEdicion?.trim() || null,
-          isbn,
-          estado: dto.estado,
-          fechaCompra: new Date(dto.fechaCompra),
-          condicion: dto.condicion,
-          precio: dto.precio ?? null,
-          moneda: this.resolveMoneda(dto.moneda, dto.precio),
-          puntuacion: dto.puntuacion ?? null,
-          caratula: dto.caratula?.trim() || null,
-          notas: dto.notas?.trim() || null,
-          dondeComprado: dto.dondeComprado?.trim() || null,
-        },
-      });
-
-      await this.syncPeople(tx, userId, created.id, dto);
-      return tx.book.findUniqueOrThrow({
-        where: { id: created.id },
-        include: bookInclude,
-      });
-    });
+    const book = await this.prisma.$transaction((tx) =>
+      this.createInTx(tx, userId, dto),
+    );
 
     const wishMatch = await this.findWishMatch(userId, isbn, dto.titulo);
     return {
-      ...this.toResponse(book),
+      ...book,
       wishMatch,
     };
   }
@@ -305,8 +319,9 @@ export class BooksService {
     userId: string,
     isbn: string,
     excludeId?: string,
+    db: Prisma.TransactionClient | PrismaService = this.prisma,
   ) {
-    const existing = await this.prisma.book.findFirst({
+    const existing = await db.book.findFirst({
       where: {
         userId,
         isbn,

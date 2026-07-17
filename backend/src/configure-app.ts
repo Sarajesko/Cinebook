@@ -9,6 +9,11 @@ export function publicDir(): string {
 }
 
 export function configureApp(app: NestExpressApplication): void {
+  // Render / proxies: Throttler identifica por IP real (X-Forwarded-For)
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
+
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

@@ -30,10 +30,13 @@ describe('WishesService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    $transaction: jest.fn(async (fn: (tx: any) => Promise<unknown>) =>
+      fn(prisma),
+    ),
   };
 
   const books = {
-    create: jest.fn(),
+    createInTx: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -81,9 +84,9 @@ describe('WishesService', () => {
     });
   });
 
-  it('toCollection creates book and deletes wish', async () => {
+  it('toCollection creates book and deletes wish in one transaction', async () => {
     prisma.wish.findFirst.mockResolvedValue(wishRow);
-    books.create.mockResolvedValue({ id: 'b1', titulo: 'Hitchcock' });
+    books.createInTx.mockResolvedValue({ id: 'b1', titulo: 'Hitchcock' });
     prisma.wish.delete.mockResolvedValue({});
 
     const result = await service.toCollection('u1', 'w1', {
@@ -102,8 +105,33 @@ describe('WishesService', () => {
     });
 
     expect(result.closedWishId).toBe('w1');
-    expect(books.create).toHaveBeenCalled();
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(books.createInTx).toHaveBeenCalled();
     expect(prisma.wish.delete).toHaveBeenCalledWith({ where: { id: 'w1' } });
+  });
+
+  it('toCollection rolls back conceptually if createInTx fails', async () => {
+    prisma.wish.findFirst.mockResolvedValue(wishRow);
+    books.createInTx.mockRejectedValue(new Error('db fail'));
+
+    await expect(
+      service.toCollection('u1', 'w1', {
+        titulo: 'Hitchcock',
+        autores: 'Truffaut',
+        anio: 1983,
+        editorial: 'Akal',
+        lengua: Language.es,
+        paisEdicion: 'España',
+        isbn: '9781234567890',
+        estado: ReadingState.recien_comprado,
+        fechaCompra: '2026-07-01',
+        condicion: 'nuevo' as any,
+        precio: 20,
+        puntuacion: 8,
+      }),
+    ).rejects.toThrow('db fail');
+
+    expect(prisma.wish.delete).not.toHaveBeenCalled();
   });
 
   it('toCollection rejects incomplete data', async () => {

@@ -83,46 +83,48 @@ export class WishesService {
 
   /**
    * Convierte deseado → libro (recien_comprado por defecto) y cierra el deseo.
-   * El body debe completar los campos obligatorios del libro; se rellenan huecos desde el wish.
+   * Create + delete van en la misma transacción (sin estado a medias).
    */
   async toCollection(userId: string, id: string, dto: CreateBookDto) {
-    const wish = await this.prisma.wish.findFirst({
-      where: { id, userId },
+    return this.prisma.$transaction(async (tx) => {
+      const wish = await tx.wish.findFirst({
+        where: { id, userId },
+      });
+      if (!wish) {
+        throw new NotFoundException('Deseado no encontrado');
+      }
+
+      const titulo = (dto.titulo || wish.titulo).trim();
+      const autores = (dto.autores || wish.autores || '').trim();
+      const isbnRaw = dto.isbn || wish.isbn || '';
+      const lengua = dto.lengua ?? wish.lengua;
+      const paisEdicion = (dto.paisEdicion || wish.paisEdicion || '').trim();
+
+      if (!autores || !isbnRaw || !lengua) {
+        throw new BadRequestException(
+          'Completa autores, ISBN y lengua para pasar a colección.',
+        );
+      }
+
+      const payload: CreateBookDto = {
+        ...dto,
+        titulo,
+        autores,
+        isbn: isbnRaw,
+        lengua,
+        paisEdicion: paisEdicion || null,
+        estado: dto.estado ?? ReadingState.recien_comprado,
+      };
+
+      const book = await this.books.createInTx(tx, userId, payload);
+      await tx.wish.delete({ where: { id } });
+
+      return {
+        book,
+        closedWishId: id,
+        message: 'Deseado pasado a la colección y cerrado.',
+      };
     });
-    if (!wish) {
-      throw new NotFoundException('Deseado no encontrado');
-    }
-
-    const titulo = (dto.titulo || wish.titulo).trim();
-    const autores = (dto.autores || wish.autores || '').trim();
-    const isbnRaw = dto.isbn || wish.isbn || '';
-    const lengua = dto.lengua ?? wish.lengua;
-    const paisEdicion = (dto.paisEdicion || wish.paisEdicion || '').trim();
-
-    if (!autores || !isbnRaw || !lengua) {
-      throw new BadRequestException(
-        'Completa autores, ISBN y lengua para pasar a colección.',
-      );
-    }
-
-    const payload: CreateBookDto = {
-      ...dto,
-      titulo,
-      autores,
-      isbn: isbnRaw,
-      lengua,
-      paisEdicion: paisEdicion || null,
-      estado: dto.estado ?? ReadingState.recien_comprado,
-    };
-
-    const book = await this.books.create(userId, payload);
-    await this.prisma.wish.delete({ where: { id } });
-
-    return {
-      book,
-      closedWishId: id,
-      message: 'Deseado pasado a la colección y cerrado.',
-    };
   }
 
   private normalizeIsbn(isbn: string) {

@@ -405,8 +405,9 @@ cd frontend && npm run test:ci
 
 | Suite | Comando | Contenido |
 |-------|---------|-----------|
-| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup, SPA, **JWT fail-closed** |
-| Backend e2e | `npm run test:e2e` | Flujo crítico, deep links SPA, **IDOR multi-usuario** |
+| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN, SPA, JWT fail-closed |
+| Backend e2e | `npm run test:e2e` | Flujo crítico, deep links SPA, IDOR multi-usuario |
+| Rate limits | (prod) | Login/register **10/min**; ISBN lookup **20/min**; resto **200/min** (por IP) |
 | Frontend | `npm run test:ci` | Componentes, filtros, ISBN, wishlist, stats |
 
 Los tests del backend usan **SQLite** (modo local), no el Postgres de Compose.
