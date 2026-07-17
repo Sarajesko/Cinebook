@@ -35,6 +35,9 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      - name: Prepare SQLite schema
+        run: npx prisma db push
+
       - name: Unit tests
         run: npm test -- --ci --passWithNoTests
 
