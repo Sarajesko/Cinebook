@@ -11,20 +11,21 @@ Marca: **Cinebook** · subtexto **Cinema Library**.
 
 1. [¿Para qué sirve?](#para-qué-sirve)
 2. [Qué incluye](#qué-incluye)
-3. [Estructura](#estructura-del-monorepo)
-4. [Requisitos](#requisitos)
-5. [Arranque rápido (elige un modo)](#arranque-rápido-elige-un-modo)
-6. [Modo A — Local con SQLite](#modo-a--local-con-sqlite-npm)
-7. [Modo B — Docker Compose (Postgres + API)](#modo-b--docker-compose-postgres--api)
-8. [Uso de la aplicación](#uso-de-la-aplicación)
-9. [Rutas del front](#rutas-del-front)
-10. [API REST](#api-rest)
-11. [Ejemplos curl](#ejemplos-curl)
-12. [Tests](#tests)
-13. [Stack y arquitectura](#stack-y-arquitectura)
-14. [Solución de problemas](#solución-de-problemas)
-15. [Roadmap](#roadmap)
-16. [Licencia](#licencia)
+3. [Capturas](#capturas)
+4. [Estructura](#estructura-del-monorepo)
+5. [Requisitos](#requisitos)
+6. [Arranque rápido (elige un modo)](#arranque-rápido-elige-un-modo)
+7. [Modo A — Local con SQLite](#modo-a--local-con-sqlite-npm)
+8. [Modo B — Docker Compose (Postgres + API)](#modo-b--docker-compose-postgres--api)
+9. [Uso de la aplicación](#uso-de-la-aplicación)
+10. [Rutas del front](#rutas-del-front)
+11. [API REST](#api-rest)
+12. [Ejemplos curl](#ejemplos-curl)
+13. [Tests](#tests)
+14. [Stack y arquitectura](#stack-y-arquitectura)
+15. [Solución de problemas](#solución-de-problemas)
+16. [Roadmap](#roadmap)
+17. [Licencia](#licencia)
 
 ---
 
@@ -69,6 +70,14 @@ Campos ligeros: título (obligatorio), autores, ISBN, lengua (mismas opciones), 
 
 ---
 
+## Capturas
+
+| Catálogo | Alta de libro | Estadísticas |
+|----------|---------------|--------------|
+| ![Catálogo](docs/screenshots/catalogo.jpg) | ![Añadir libro](docs/screenshots/alta.jpg) | ![Estadísticas](docs/screenshots/estadisticas.jpg) |
+
+---
+
 ## Estructura del monorepo
 
 ```
@@ -78,6 +87,7 @@ Cinebook/
 │   ├── Dockerfile            Imagen de la API (PostgreSQL)
 │   ├── docker-entrypoint.sh  Espera DB + prisma db push + arranque
 │   └── prisma/               Schema (SQLite en local; PG en la imagen)
+├── docs/screenshots/         Capturas reales de la UI
 ├── .github/workflows/        CI (tests)
 ├── docker-compose.yml        Servicios db + api
 ├── .env.example              Variables de Compose (copiar a `.env`)
@@ -90,6 +100,7 @@ Cinebook/
 |-------------------|-----|
 | `frontend/` | View Angular |
 | `backend/` | Controller Nest + Model Prisma |
+| `docs/screenshots/` | Capturas de la aplicación |
 | `docker-compose.yml` | Postgres 16 + API en contenedores |
 | `.env.example` | Plantilla de secretos/puertos para Compose |
 
