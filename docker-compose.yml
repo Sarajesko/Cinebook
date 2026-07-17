@@ -32,7 +32,8 @@ services:
       PORT: 3000
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-cinebook}:${POSTGRES_PASSWORD:-cinebook}@db:5432/${POSTGRES_DB:-cinebook}
-      JWT_SECRET: ${JWT_SECRET:-cambia-este-secreto-en-compose}
+      # Obligatorio: export JWT_SECRET=... (no hay default inseguro en production)
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a strong unique value}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200}
     depends_on:

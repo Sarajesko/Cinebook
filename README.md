@@ -216,7 +216,7 @@ Edita al menos `JWT_SECRET`. Variables principales:
 | `POSTGRES_DB` | `cinebook` | Nombre de la base |
 | `POSTGRES_PORT` | `5433` | Puerto en el **host** → 5432 del contenedor |
 | `API_PORT` | `3000` | Puerto en el **host** → 3000 del contenedor |
-| `JWT_SECRET` | (ejemplo) | Secreto JWT — **cámbialo** |
+| `JWT_SECRET` | *(obligatorio)* | Secreto JWT fuerte — sin default; Compose falla si falta |
 | `JWT_EXPIRES_IN` | `7d` | Caducidad del token |
 | `CORS_ORIGIN` | `http://localhost:4200` | Origen permitido del front |
 
@@ -405,8 +405,8 @@ cd frontend && npm run test:ci
 
 | Suite | Comando | Contenido |
 |-------|---------|-----------|
-| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup, **rutas SPA** |
-| Backend e2e | `npm run test:e2e` | Flujo crítico + **deep links** (`/catalogo/:id` → HTML, no JSON 500) |
+| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup, SPA, **JWT fail-closed** |
+| Backend e2e | `npm run test:e2e` | Flujo crítico, deep links SPA, **IDOR multi-usuario** |
 | Frontend | `npm run test:ci` | Componentes, filtros, ISBN, wishlist, stats |
 
 Los tests del backend usan **SQLite** (modo local), no el Postgres de Compose.

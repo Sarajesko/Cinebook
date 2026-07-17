@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { resolveJwtSecret } from './jwt-secret';
 import { JwtStrategy } from './jwt.strategy';
 
 @Module({
@@ -15,7 +16,7 @@ import { JwtStrategy } from './jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') ?? 'cambia-este-secreto-en-local',
+        secret: resolveJwtSecret(config.get<string>('JWT_SECRET')),
         signOptions: {
           expiresIn: (config.get<string>('JWT_EXPIRES_IN') ?? '7d') as `${number}d`,
         },
