@@ -1,0 +1,40 @@
+import {
+  Catch,
+  ExceptionFilter,
+  NotFoundException,
+  ArgumentsHost,
+} from '@nestjs/common';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import type { Request, Response } from 'express';
+
+/**
+ * Deep links del front Angular (/catalogo/:id, etc.) no existen como archivos.
+ * Si Nest devolvería 404 fuera de /api, servimos index.html (SPA).
+ */
+@Catch(NotFoundException)
+export class SpaNotFoundFilter implements ExceptionFilter {
+  private readonly indexHtml = join(__dirname, '..', '..', 'public', 'index.html');
+  private readonly enabled = existsSync(this.indexHtml);
+
+  catch(exception: NotFoundException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const req = ctx.getRequest<Request>();
+    const res = ctx.getResponse<Response>();
+
+    const path = req.path || '';
+    const isApi = path.startsWith('/api');
+    const isGet = req.method === 'GET' || req.method === 'HEAD';
+    const looksLikeAsset = /\.[a-zA-Z0-9]{1,8}$/.test(path);
+
+    if (this.enabled && isGet && !isApi && !looksLikeAsset) {
+      return res.sendFile(this.indexHtml);
+    }
+
+    const status = exception.getStatus();
+    const body = exception.getResponse();
+    res.status(status).json(
+      typeof body === 'string' ? { statusCode: status, message: body } : body,
+    );
+  }
+}

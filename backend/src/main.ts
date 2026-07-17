@@ -1,6 +1,10 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
+import { SpaNotFoundFilter } from './spa-not-found.filter';
 
 function corsOrigins(): boolean | string | string[] {
   const raw = process.env.CORS_ORIGIN?.trim();
@@ -12,7 +16,7 @@ function corsOrigins(): boolean | string | string[] {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
@@ -27,6 +31,12 @@ async function bootstrap() {
     origin: corsOrigins(),
     credentials: true,
   });
+
+  const publicDir = join(__dirname, '..', '..', 'public');
+  if (existsSync(join(publicDir, 'index.html'))) {
+    app.useStaticAssets(publicDir, { index: false });
+    app.useGlobalFilters(new SpaNotFoundFilter());
+  }
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
