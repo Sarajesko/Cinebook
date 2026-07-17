@@ -5,7 +5,8 @@
 Catálogo personal de **libros de cine**: inventario claro, anti-duplicados, lista de deseados y estadísticas.  
 Marca: **Cinebook** · subtexto **Cinema Library**.
 
-**Repositorio:** [github.com/Sarajesko/Cinebook](https://github.com/Sarajesko/Cinebook)
+**Repositorio:** [github.com/Sarajesko/Cinebook](https://github.com/Sarajesko/Cinebook)  
+**Demo online:** [cinebook-o4t3.onrender.com](https://cinebook-o4t3.onrender.com) (Render Free; la 1ª visita puede tardar ~1 min si estaba dormido)
 
 ---
 
