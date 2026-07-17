@@ -26,8 +26,9 @@ Marca: **Cinebook** · subtexto **Cinema Library**.
 13. [Tests](#tests)
 14. [Stack y arquitectura](#stack-y-arquitectura)
 15. [Solución de problemas](#solución-de-problemas)
-16. [Roadmap](#roadmap)
-17. [Licencia](#licencia)
+16. [Publicar online (regalo / demo)](#publicar-online-regalo--demo)
+17. [Roadmap](#roadmap)
+18. [Licencia](#licencia)
 
 ---
 
@@ -56,6 +57,7 @@ La interfaz sigue la metáfora de una **sala de lectura de cine** (atmósfera ed
 | Estadísticas «La sala en números» (periodos, buscador, editoriales) | Listo |
 | Favicon + banderas SVG (incl. catalán) | Listo |
 | Docker Compose (PostgreSQL + API Nest) | Listo (front en el host) |
+| Deploy full (UI + API, una URL) | Listo (Dockerfile raíz; hosting aparte) |
 | CI GitHub Actions (tests en push/PR) | Listo |
 
 ### Modelo de libro
@@ -86,12 +88,14 @@ Campos ligeros: título (obligatorio), autores, ISBN, lengua (mismas opciones), 
 Cinebook/
 ├── frontend/                 Angular 19 — View (UI)
 ├── backend/                  NestJS 11 + Prisma — Controller / Model
-│   ├── Dockerfile            Imagen de la API (PostgreSQL)
+│   ├── Dockerfile            Imagen solo API (Compose local)
 │   ├── docker-entrypoint.sh  Espera DB + prisma db push + arranque
 │   └── prisma/               Schema (SQLite en local; PG en la imagen)
 ├── docs/screenshots/         Capturas reales de la UI
+├── Dockerfile                Deploy full (UI + API, una URL)
+├── railway.toml              Hint para Railway
 ├── .github/workflows/        CI (tests)
-├── docker-compose.yml        Servicios db + api
+├── docker-compose.yml        Servicios db + api (local)
 ├── .env.example              Variables de Compose (copiar a `.env`)
 ├── .gitattributes            Scripts .sh con fin de línea LF
 ├── LICENSE                   MIT
@@ -102,8 +106,9 @@ Cinebook/
 |-------------------|-----|
 | `frontend/` | View Angular |
 | `backend/` | Controller Nest + Model Prisma |
+| `Dockerfile` | Producción: Angular + Nest en un contenedor |
 | `docs/screenshots/` | Capturas de la aplicación |
-| `docker-compose.yml` | Postgres 16 + API en contenedores |
+| `docker-compose.yml` | Postgres 16 + API en contenedores (local) |
 | `.env.example` | Plantilla de secretos/puertos para Compose |
 
 ---
@@ -437,13 +442,50 @@ El servicio Prisma elige adaptador según `DATABASE_URL` (`file:…` → SQLite,
 
 ---
 
+## Publicar online (regalo / demo)
+
+A diferencia de un sitio HTML estático (p. ej. GitHub Pages), Cinebook necesita **API + base de datos**. El `Dockerfile` de la raíz empaqueta **front + API en una sola URL**.
+
+### Opción recomendada — Railway (unos minutos)
+
+1. Crea cuenta en [railway.app](https://railway.app) e inicia un **New Project**.
+2. **Add PostgreSQL** (plugin / database).
+3. **Deploy from GitHub** → elige `Sarajesko/Cinebook`.
+   - Root directory: `/` (usa el `Dockerfile` de la raíz y `railway.toml`).
+4. En la API/servicio web, variables de entorno:
+   - `DATABASE_URL` — Railway la inyecta al enlazar Postgres (referencia a la variable del plugin).
+   - `JWT_SECRET` — cadena larga aleatoria (no uses el default de Compose).
+   - `CORS_ORIGIN` — la URL pública del servicio (p. ej. `https://cinebook-production-xxxx.up.railway.app`), o `*` en demo corta.
+   - `PORT` — Railway lo define solo; no hace falta fijarlo.
+5. Genera dominio público (**Settings → Networking → Generate domain**).
+6. Abre la URL: verás login / registro. Crea **tu cuenta** y, si quieres, otra para tu amigo (o que él se registre).
+
+Cada persona con su usuario ve **su** catálogo (los datos no se mezclan).
+
+### Alternativa — Render
+
+Misma idea: Web Service con el `Dockerfile` de la raíz + base **PostgreSQL**, mismas variables (`DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`).
+
+### Qué no hace falta
+
+- GitHub Pages solo (no hay backend ahí).
+- Desplegar Angular y Nest por separado (este Dockerfile ya sirve el UI desde Nest en `/` y la API en `/api`).
+
+### Local vs producción
+
+| | Local | Online |
+|--|--------|--------|
+| Front | `ng serve` → `localhost:4200` | incluido en la misma URL |
+| API | Nest o Compose | misma URL `/api` |
+| DB | SQLite o Postgres Compose | Postgres del hosting |
+
+---
+
 ## Roadmap
 
-- Publicar demo online (API + front) para probar sin instalar.
 - Identificador `SIN-ISBN-…` cuando el código no es legible (segunda mano).
-- Contener el front (nginx) en Compose — opcional.
+- Contener el front (nginx) en Compose local — opcional.
 - FastAPI **no** forma parte del camino principal (Nest es la API de Cinebook).
-
 ---
 
 ## Licencia

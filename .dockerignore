@@ -1,0 +1,17 @@
+.git
+.github
+**/node_modules
+**/dist
+**/coverage
+**/.angular
+**/*.db
+**/.env
+.env
+docs
+checklist.md
+contexto.md
+ideas.md
+*.md
+!README.md
+frontend/.vscode
+backend/.vscode

@@ -1,0 +1,10 @@
+# Railway: root Dockerfile = UI + API in one service.
+# Add a Postgres plugin and set JWT_SECRET (and optionally CORS_ORIGIN).
+
+[build]
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/api"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"

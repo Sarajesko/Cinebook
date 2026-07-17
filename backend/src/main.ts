@@ -2,6 +2,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
+function corsOrigins(): boolean | string | string[] {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw || raw === '*') {
+    return true;
+  }
+  const list = raw.split(',').map((o) => o.trim()).filter(Boolean);
+  return list.length <= 1 ? (list[0] ?? true) : list;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -15,7 +24,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
+    origin: corsOrigins(),
     credentials: true,
   });
 
