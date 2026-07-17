@@ -405,8 +405,8 @@ cd frontend && npm run test:ci
 
 | Suite | Comando | Contenido |
 |-------|---------|-----------|
-| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup |
-| Backend e2e | `npm run test:e2e` | HTTP real + flujo crítico |
+| Backend unit | `npm test` | Auth, books, wishes, stats, ISBN lookup, **rutas SPA** |
+| Backend e2e | `npm run test:e2e` | Flujo crítico + **deep links** (`/catalogo/:id` → HTML, no JSON 500) |
 | Frontend | `npm run test:ci` | Componentes, filtros, ISBN, wishlist, stats |
 
 Los tests del backend usan **SQLite** (modo local), no el Postgres de Compose.

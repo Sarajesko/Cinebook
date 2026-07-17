@@ -7,6 +7,7 @@ import {
 import { existsSync } from 'fs';
 import { join } from 'path';
 import type { Request, Response } from 'express';
+import { shouldServeSpa } from './spa-routing';
 
 /**
  * Deep links del front Angular (/catalogo/:id, etc.) no existen como archivos.
@@ -23,11 +24,7 @@ export class SpaNotFoundFilter implements ExceptionFilter {
     const res = ctx.getResponse<Response>();
 
     const path = req.path || '';
-    const isApi = path.startsWith('/api');
-    const isGet = req.method === 'GET' || req.method === 'HEAD';
-    const looksLikeAsset = /\.[a-zA-Z0-9]{1,8}$/.test(path);
-
-    if (this.enabled && isGet && !isApi && !looksLikeAsset) {
+    if (this.enabled && shouldServeSpa(req.method, path)) {
       return res.sendFile(this.indexHtml);
     }
 
