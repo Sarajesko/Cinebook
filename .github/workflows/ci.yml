@@ -43,6 +43,7 @@ jobs:
 
       - name: E2E tests
         run: npm run test:e2e -- --ci
+        # runInBand ya va en el script: SQLite compartida no aguanta workers en paralelo
 
   frontend:
     name: Frontend tests
