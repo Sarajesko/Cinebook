@@ -1,8 +1,24 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router, UrlTree } from '@angular/router';
-import { of } from 'rxjs';
+import {
+  GuardResult,
+  MaybeAsync,
+  provideRouter,
+  Router,
+  UrlTree,
+} from '@angular/router';
+import { Observable, from, isObservable, of } from 'rxjs';
 import { authGuard, guestGuard } from './auth.guard';
 import { AuthService } from './auth.service';
+
+function asObservable(result: MaybeAsync<GuardResult>): Observable<GuardResult> {
+  if (isObservable(result)) {
+    return result;
+  }
+  if (result instanceof Promise) {
+    return from(result);
+  }
+  return of(result);
+}
 
 describe('authGuard / guestGuard', () => {
   let auth: jasmine.SpyObj<AuthService>;
@@ -35,8 +51,10 @@ describe('authGuard / guestGuard', () => {
   it('authGuard allows when session validates', (done) => {
     auth.isLoggedIn.and.returnValue(true);
     auth.validateSession.and.returnValue(of(true));
-    TestBed.runInInjectionContext(() =>
-      authGuard({} as never, {} as never),
+    asObservable(
+      TestBed.runInInjectionContext(() =>
+        authGuard({} as never, {} as never),
+      ),
     ).subscribe((result) => {
       expect(result).toBeTrue();
       done();
@@ -46,8 +64,10 @@ describe('authGuard / guestGuard', () => {
   it('authGuard redirects when session is invalid', (done) => {
     auth.isLoggedIn.and.returnValue(true);
     auth.validateSession.and.returnValue(of(false));
-    TestBed.runInInjectionContext(() =>
-      authGuard({} as never, {} as never),
+    asObservable(
+      TestBed.runInInjectionContext(() =>
+        authGuard({} as never, {} as never),
+      ),
     ).subscribe((result) => {
       expect(result).toEqual(jasmine.any(UrlTree));
       expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
@@ -66,8 +86,10 @@ describe('authGuard / guestGuard', () => {
   it('guestGuard redirects to catalogo when session ok', (done) => {
     auth.isLoggedIn.and.returnValue(true);
     auth.validateSession.and.returnValue(of(true));
-    TestBed.runInInjectionContext(() =>
-      guestGuard({} as never, {} as never),
+    asObservable(
+      TestBed.runInInjectionContext(() =>
+        guestGuard({} as never, {} as never),
+      ),
     ).subscribe((result) => {
       expect(result).toEqual(jasmine.any(UrlTree));
       expect(router.createUrlTree).toHaveBeenCalledWith(['/catalogo']);
