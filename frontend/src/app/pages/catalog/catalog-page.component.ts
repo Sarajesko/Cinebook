@@ -103,8 +103,20 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
         this.allBooks.set(list);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('No se pudo cargar el catálogo');
+      error: (err: { name?: string; status?: number; statusCode?: number }) => {
+        const status = err.status ?? err.statusCode;
+        // 401: el interceptor ya manda a login; no pintar error fantasma.
+        if (status === 401) {
+          this.loading.set(false);
+          return;
+        }
+        if (err.name === 'TimeoutError' || status === 0) {
+          this.error.set(
+            'No hay respuesta del servidor. Si usas la demo online, espera ~1 min (Render despierto) y pulsa Reintentar. En local, arranca la API en el puerto 3000.',
+          );
+        } else {
+          this.error.set('No se pudo cargar el catálogo');
+        }
         this.loading.set(false);
       },
     });

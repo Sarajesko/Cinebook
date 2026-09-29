@@ -22,6 +22,51 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <!-- Visible solo hasta que Angular arranca (cold start Render / primer paint). -->
+    <div class="boot-shell" role="status" aria-live="polite">
+      <p class="boot-brand">Cinebook</p>
+      <p class="boot-tag">Cinema Library</p>
+      <p class="boot-msg">Abriendo la sala…</p>
+    </div>
+  </app-root>
+  <style>
+    .boot-shell {
+      min-height: 100vh;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      gap: 0.35rem;
+      padding: 2rem;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #f2ebe0;
+      background:
+        radial-gradient(ellipse at 18% 0%, rgba(74, 58, 48, 0.9) 0%, transparent 52%),
+        linear-gradient(180deg, #16110e 0%, #0e0b09 100%);
+    }
+    .boot-brand {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .boot-tag {
+      margin: 0;
+      font-style: italic;
+      opacity: 0.7;
+      letter-spacing: 0.12em;
+      font-size: 0.95rem;
+    }
+    .boot-msg {
+      margin: 1.25rem 0 0;
+      opacity: 0.55;
+      font-size: 0.9rem;
+      animation: boot-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes boot-pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.8; }
+    }
+  </style>
 </body>
 </html>

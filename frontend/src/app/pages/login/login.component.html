@@ -6,10 +6,16 @@
     <label>
       Usuario
       <input formControlName="handle" autocomplete="username" />
+      @if (form.controls.handle.touched && form.controls.handle.invalid) {
+        <span class="hint">Mínimo 3 caracteres</span>
+      }
     </label>
     <label>
       Contraseña
       <input type="password" formControlName="password" autocomplete="current-password" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <span class="hint">Mínimo 6 caracteres</span>
+      }
     </label>
 
     @if (error()) {

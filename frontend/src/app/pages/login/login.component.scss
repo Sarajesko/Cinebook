@@ -52,6 +52,12 @@ button:disabled {
   cursor: wait;
 }
 
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: #f0a8a0;
+}
+
 .error {
   margin: 0;
   color: #f0a8a0;

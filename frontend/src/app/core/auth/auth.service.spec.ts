@@ -59,9 +59,64 @@ describe('AuthService', () => {
 
   it('logout clears session', () => {
     localStorage.setItem('cinebook_token', 'x');
-    localStorage.setItem('cinebook_user', JSON.stringify({ id: 'u1', handle: 'a' }));
+    localStorage.setItem(
+      'cinebook_user',
+      JSON.stringify({ id: 'u1', handle: 'a' }),
+    );
     service.logout();
     expect(service.isLoggedIn()).toBeFalse();
     expect(service.user()).toBeNull();
+  });
+
+  it('validateSession clears junk token on 401', () => {
+    localStorage.setItem('cinebook_token', 'stale');
+    localStorage.setItem(
+      'cinebook_user',
+      JSON.stringify({ id: 'u1', handle: 'ghost' }),
+    );
+    service.user.set({ id: 'u1', handle: 'ghost' });
+
+    let ok = true;
+    service.validateSession().subscribe((v) => (ok = v));
+
+    const req = http.expectOne(`${environment.apiUrl}/auth/me`);
+    req.flush(
+      { message: 'Unauthorized' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
+
+    expect(ok).toBeFalse();
+    expect(service.isLoggedIn()).toBeFalse();
+    expect(service.user()).toBeNull();
+  });
+
+  it('validateSession keeps session when API is unreachable', () => {
+    localStorage.setItem('cinebook_token', 'live');
+    localStorage.setItem(
+      'cinebook_user',
+      JSON.stringify({ id: 'u1', handle: 'cinefilo' }),
+    );
+    service.user.set({ id: 'u1', handle: 'cinefilo' });
+
+    let ok = false;
+    service.validateSession().subscribe((v) => (ok = v));
+
+    const req = http.expectOne(`${environment.apiUrl}/auth/me`);
+    req.error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown' });
+
+    expect(ok).toBeTrue();
+    expect(service.isLoggedIn()).toBeTrue();
+  });
+
+  it('validateSession accepts a live token', () => {
+    localStorage.setItem('cinebook_token', 'live');
+    let ok = false;
+    service.validateSession().subscribe((v) => (ok = v));
+
+    const req = http.expectOne(`${environment.apiUrl}/auth/me`);
+    req.flush({ id: 'u1', handle: 'cinefilo' });
+
+    expect(ok).toBeTrue();
+    expect(service.user()?.handle).toBe('cinefilo');
   });
 });

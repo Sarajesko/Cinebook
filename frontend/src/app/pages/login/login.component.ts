@@ -35,9 +35,13 @@ export class LoginComponent {
         this.loading.set(false);
         void this.router.navigateByUrl('/catalogo');
       },
-      error: () => {
+      error: (err: { name?: string; status?: number }) => {
         this.loading.set(false);
-        this.error.set('Credenciales incorrectas');
+        this.error.set(
+          err.name === 'TimeoutError'
+            ? 'El servidor tarda en responder (puede estar despertando). Prueba de nuevo en unos segundos.'
+            : 'Credenciales incorrectas',
+        );
       },
     });
   }

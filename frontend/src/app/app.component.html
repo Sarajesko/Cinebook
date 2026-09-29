@@ -4,7 +4,7 @@
     <p class="tagline">{{ tagline }}</p>
   </div>
 
-  @if (auth.isLoggedIn()) {
+  @if (auth.user()) {
     <nav class="nav" aria-label="Principal">
       <a routerLink="/catalogo" routerLinkActive="active">Catálogo</a>
       <a routerLink="/deseados" routerLinkActive="active">Deseados</a>

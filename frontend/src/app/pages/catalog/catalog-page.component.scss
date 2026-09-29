@@ -135,6 +135,24 @@ h1 {
   color: #f0a8a0;
 }
 
+.error-block {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+  padding: 1rem 0 2rem;
+}
+
+.error-block .error {
+  margin: 0;
+  max-width: 36rem;
+}
+
+.error-block .btn {
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
 .empty {
   padding: 3rem 0;
   text-align: center;

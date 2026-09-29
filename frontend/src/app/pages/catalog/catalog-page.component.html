@@ -115,7 +115,10 @@
   @if (loading()) {
     <p class="muted">Cargando la sala…</p>
   } @else if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
+    <div class="error-block" role="alert">
+      <p class="error">{{ error() }}</p>
+      <button type="button" class="btn" (click)="reload()">Reintentar</button>
+    </div>
   } @else if (allBooks().length === 0) {
     <div class="empty">
       <p class="empty-title">La sala de lectura está vacía.</p>
